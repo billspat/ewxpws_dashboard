@@ -1,0 +1,3 @@
+BASE_PWS_API_URL=  # add URL of Enviroweather PWS api
+BASE_RM_API_URL=  # add base URL of Enviroweather RM-API
+BASE_EWX_API_URL=  # add base URL of Enviroweather web API (or just API)
