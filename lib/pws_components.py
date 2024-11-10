@@ -3,7 +3,9 @@ import panel as pn
 import folium
 from lib.pwsapi import station_latlon, get_all_stations, get_hourly_readings
 
-pn.extension(design="material", sizing_mode="stretch_both")
+pn.extension(loading_spinner='dots', loading_color='#00aa41', template='bootstrap', sizing_mode="stretch_both")
+
+# pn.extension(design="material", sizing_mode="stretch_both")
 
 from lib.pwsapi import get_station_codes, get_station_data
 
@@ -138,7 +140,7 @@ def pws_page(main_pane:pn.pane, sidebar:pn.Column, page_title:str)->pn.template:
     Returns:
         pn.template: _description_
     """
-    page = pn.template.MaterialTemplate(
+    page = pn.template.BootstrapTemplate(
         title= page_title,
         sidebar=sidebar,
         sidebar_width=sidebar_width, 
