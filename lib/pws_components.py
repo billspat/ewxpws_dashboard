@@ -3,7 +3,7 @@ import panel as pn
 import folium
 from lib.pwsapi import station_latlon, get_all_stations, get_hourly_readings
 
-pn.extension(loading_spinner='dots', loading_color='#00aa41', template='bootstrap', sizing_mode="stretch_both")
+pn.extension(loading_spinner='dots', loading_color='#00aa41', sizing_mode="stretch_both")  #  template='bootstrap',
 
 # pn.extension(design="material", sizing_mode="stretch_both")
 
@@ -21,6 +21,9 @@ station_selector = pn.widgets.Select(name = "station_code",
                                      options = list(get_station_codes()),
                                      width = sidebar_width-25, height = 50)
 
+
+if pn.state.location:
+    pn.state.location.sync(station_selector, {'value': 'station_code'})
 
 
 from datetime import date, timedelta
@@ -94,7 +97,6 @@ def station_data_pane(station_code):
 # bound_station_data_pane = pn.bind(station_data_pane,station_code = station_selector )   
 ########## Map
 
-
 def station_map(selected_station_code, stations, starter_location = [42.71025, - 84.46308]):
     
     # if(selected_station_code):
@@ -105,17 +107,23 @@ def station_map(selected_station_code, stations, starter_location = [42.71025, -
     for station_code in stations:
         
         station = stations[station_code]        
-        station_info = f"{station_code} {station.get('station_type')}" 
+        station_link = f"click to see <a target=\"_parent\" href=\"/station\">{station_code}</a> {station.get('station_type')}" 
         station_coordinates = [station.get('lat'),station.get('lon')]
         
         marker_color = 'red' if (selected_station_code == station_code) else 'green' 
-            
+        
         marker = folium.Marker(
             station_coordinates, 
-            popup = station.get('station_location'), 
-            tooltip = station_info,
+            popup = station_link, 
             icon=folium.Icon(color=marker_color)
-            )
+            )    
+        
+        # marker = folium.Marker(
+        #     station_coordinates, 
+        #     popup = station.get('station_location'), 
+        #     tooltip = station_info,
+        #     icon=folium.Icon(color=marker_color)
+        #     )
                 
         marker.add_to(m)
         
@@ -146,7 +154,8 @@ def pws_page(main_pane:pn.pane, sidebar:pn.Column, page_title:str)->pn.template:
         sidebar_width=sidebar_width, 
         header_background = "#18453b"
     )
-        
+    
+      
     # page.main.append(top_row)
     page.main.append( main_pane)
     
