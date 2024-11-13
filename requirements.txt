@@ -1,5 +1,7 @@
-panel
-hvplot
 pandas
-folium
 python-dotenv
+dash
+dash_ag_grid
+dash-leaflet
+dash-extensions
+# dash-mantine-components
