@@ -93,18 +93,7 @@ def display_marker_click(*args):
         # station_record = station_records[station_code]
         return({"function": f"params.data.station_code == '{station_code}'"})            
         # return(station_code, {"function": f"params.data.station_code == '{station_code}'"})   
-        
-
-# MAP BUG FIX
-# this is to be called just once on page load from a dummy div to force 
-# the leaflet map 
-@app.callback(Output("station_map", "invalidateSize"),
-              Input("needed_for_map_resize", "children")
-          )
-def resize_map(whatever):
-    return True
-
-      
+              
 if __name__ == "__main__":
     # debug = None required to respect DASH_DEBUG environment var (True /False)
     app.run(debug=None)
