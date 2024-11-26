@@ -1,0 +1,24 @@
+
+
+installing nginx on amazon linux
+
+
+sudo dnf install -y nginx
+ sudo systemctl start nginx.service
+ sudo systemctl status nginx.service
+ sudo systemctl enable nginx.service
+
+
+# install certbot
+python3 -m venv /opt/certbot
+source /opt/certbot/bin/activate
+sudo /opt/certbot/bin/certbot --nginx
+
+# add reverse proxy 
+
+  sudo nano /etc/nginx/nginx.conf
+# add ssl cert to nginx
+  sudo /opt/certbot/bin/certbot --nginx
+  # confirm/edit conf
+  sudo nano /etc/nginx/nginx.conf
+  sudo systemctl restart nginx
