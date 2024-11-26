@@ -108,4 +108,4 @@ def resize_map(whatever):
 if __name__ == "__main__":
     
     DEBUG = getenv("DEBUG", default=True)
-    app.run_server(debug=DEBUG, port=8888)
+    app.run(debug=DEBUG)
