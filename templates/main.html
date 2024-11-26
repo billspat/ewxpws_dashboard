@@ -1,0 +1,447 @@
+<div class="page">
+    <!-- Sidebar -->
+    <aside class="navbar navbar-vertical navbar-expand-lg navbar-dark">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu" aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <h1 class="navbar-brand navbar-brand-autodark">
+          <a href=".">
+            <img src = "assets/davis_station_icon_400px_reverse.png" height="250" alt="Personal Weather Station Icon" class="navbar-brand-image">
+          </a>
+        </h1>
+
+        <div class="collapse navbar-collapse" id="sidebar-menu">
+          <ul class="navbar-nav pt-lg-3">
+            <li class="nav-item">
+              <a class="nav-link" href="./" >
+                <span class="nav-link-icon d-md-none d-lg-inline-block">                    
+                </span>
+                <span class="nav-link-title">
+                  Home
+                </span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" >
+                <span class="nav-link-icon d-md-none d-lg-inline-block">                    
+                </span>
+                <span class="nav-link-title">
+                  Weather
+                </span>
+              </a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false" >
+                <span class="nav-link-icon d-md-none d-lg-inline-block">                    
+                </span>
+                <span class="nav-link-title">
+                  Models
+                </span>
+              </a>
+              <div class="dropdown-menu">
+                <div class="dropdown-menu-columns">
+                  <div class="dropdown-menu-column">
+                    <a class="dropdown-item" href="#">
+                      TOMCAST
+                    </a>
+                    <div class="dropend">
+                      <a class="dropdown-item dropdown-toggle" href="#" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false" >                                                    
+                        Apples
+                      </a>
+                      <div class="dropdown-menu">
+                        <a href="#" class="dropdown-item">
+                           Apple Scab
+                        </a>
+                        <a href="#" class="dropdown-item">
+                          (crop model 2)
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" >
+                <span class="nav-link-icon d-md-none d-lg-inline-block">                    
+                </span>
+                <span class="nav-link-title">
+                  About the project
+                </span>
+              </a>
+            </li>
+          </ul>
+        </div>
+        
+      </div>
+    </aside>
+    
+   
+    <div class="page-wrapper">
+    
+      <!-- -----------Page header--------- -->
+      <div class="page-header d-print-none">
+        <div class="container-xl">
+          <div class="row g-2 align-items-center">
+            <div class="col">
+              <!-- Page pre-title -->
+              <div class="page-pretitle">
+                MSU Enviroweather
+              </div>
+              <h2 class="page-title">
+                Personal Weather Station Dashboard
+              </h2>                
+            </div>
+            
+            <!-- ---------Page title actions---------- -->
+            <div class="col-12 col-md-auto ms-auto d-print-none">
+              <div class="btn-list">
+             
+                <span class="d-none d-sm-inline">
+                  <a href="#" class="btn">
+                    Some Function
+                  </a>
+                </span>
+                <a href="#" class="btn btn-primary d-none d-sm-inline-block" data-bs-toggle="modal" data-bs-target="#modal-report">                                        
+                  Download Data
+                </a>
+                <a href="#" class="btn btn-primary d-sm-none btn-icon" data-bs-toggle="modal" data-bs-target="#modal-report" aria-label="Create new report">
+                                      
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Page body -->
+      <div class="page-body">
+        <div class="container-xl">
+
+          
+          <!-- data cards -->
+          <div class="row row-deck row-cards">
+
+              <!-- ------table of stations------ -->
+              <div class="col-lg-6">
+                  <div class="card">
+                      <div class="card-body" >
+
+                      {{ station_table | plotly }}
+                      </div>
+                  </div>
+              </div>
+
+              <!-- ------ map  of stations------ -->
+              <div class="col-lg-6">
+                  <div class="card">
+                      <div class="card-body min-h-400" >
+                          {{station_map | plotly}}
+                      </div>
+                  </div>
+              </div>
+          
+              <div class="col-sm-6 col-lg-3">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex align-items-center">
+                    <div class="subheader">Selected Station</div>
+                  </div>
+                  <div class="h1 mb-3">
+                      <a id = "text_station_table_selection" href='#'></a>
+                  </div>           
+                  <div>
+                      <!-- <div id="station_type_cell">Station Type</div> -->
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex align-items-center">
+                    <div class="subheader">Temperature</div>
+                    <div class="ms-auto lh-1">
+                      <div class="dropdown">
+                        <a class="dropdown-toggle text-muted" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Last 7 days</a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                          <a class="dropdown-item active" href="#">Last 7 days</a>
+                          <a class="dropdown-item" href="#">Last 30 days</a>
+                          <a class="dropdown-item" href="#">Last 3 months</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-flex align-items-baseline">
+                    <div class="h1 mb-0 me-2">61.3</div>
+                    <div class="me-auto">
+                      <span class="text-green d-inline-flex align-items-center lh-1">
+                        F                           
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div id="chart-Temperature-bg" class="chart-sm"></div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex align-items-center">
+                    <div class="subheader">Precipidation</div>
+                    <div class="ms-auto lh-1">
+                      <div class="dropdown">
+                        <a class="dropdown-toggle text-muted" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">hourly</a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                          <a class="dropdown-item active" href="#">last hour</a>
+                          <a class="dropdown-item" href="#">daily</a>
+                          <a class="dropdown-item" href="#">other</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-flex align-items-baseline">
+                    <div class="h1 mb-3 me-2">1.1</div>
+                    <div class="me-auto">
+                      <span class="d-inline-flex align-items-center lh-1">
+                        inches                           
+                      </span>
+                    </div>
+                  </div>
+                  <div id="" class="chart-sm"></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex align-items-center">
+                    <div class="subheader">Rel Humidity</div>
+                    <div class="ms-auto lh-1">
+                      <div class="dropdown">
+                        <a class="dropdown-toggle text-muted" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">current</a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                          <a class="dropdown-item active" href="#">current</a>
+                          <a class="dropdown-item" href="#">daily</a>
+                          <a class="dropdown-item" href="#">other</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-flex align-items-baseline">
+                    <div class="h1 mb-3 me-2">74</div>
+                    <div class="me-auto">
+                      <span class="d-inline-flex align-items-center lh-1">
+                        %                           
+                      </span>
+                    </div>
+                  </div>
+                  <div id="chart-active-users" class="chart-sm"></div>
+                </div>
+              </div>
+            </div>
+
+
+            <!-- small data cards -->
+            <!-- <div class="col-12">
+              <div class="row row-cards">
+                <div class="col-sm-6 col-lg-3">
+                  <div class="card card-sm">
+                    <div class="card-body">
+                      <div class="row align-items-center">
+                        <div class="col-auto">
+                          <span class="bg-primary text-white avatar">                              
+                          </span>
+                        </div>
+                        <div class="col">
+                          <div class="font-weight-medium">
+                            132 Metric
+                          </div>
+                          <div class="text-muted">
+                            12 waiting payments
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                  <div class="card card-sm">
+                    <div class="card-body">
+                      <div class="row align-items-center">
+                        <div class="col-auto">
+                          <span class="bg-green text-white avatar">                              
+                          </span>
+                        </div>
+                        <div class="col">
+                          <div class="font-weight-medium">
+                            78 Orders
+                          </div>
+                          <div class="text-muted">
+                            32 shipped
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                  <div class="card card-sm">
+                    <div class="card-body">
+                      <div class="row align-items-center">
+                        <div class="col-auto">
+                          <span class="bg-twitter text-white avatar">                              
+                          </span>
+                        </div>
+                        <div class="col">
+                          <div class="font-weight-medium">
+                            623 Shares
+                          </div>
+                          <div class="text-muted">
+                            16 today
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                  <div class="card card-sm">
+                    <div class="card-body">
+                      <div class="row align-items-center">
+                        <div class="col-auto">
+                          <span class="bg-facebook text-white avatar">                              
+                          </span>
+                        </div>
+                        <div class="col">
+                          <div class="font-weight-medium">
+                            132 Likes
+                          </div>
+                          <div class="text-muted">
+                            21 today
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div> -->
+
+
+            <!-- DAILY WEATHER wide data card-->
+            <div class="col-lg-12">
+              <div class="row row-cards">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            Hourly Weather
+                        </div>
+                        <div class="card-body">
+                            <div id="daily_readings_table" class="table"></div>                        
+                        </div>
+                    </div>
+                </div>
+
+            <!-- wide data card-->
+            <div class="col-lg-12">
+              <div class="row row-cards">
+                <div class="col-12">
+                  <div class="card">
+                    <div class="card-body">
+                      <p class="mb-3">Station API Data Collection Status</p>
+                      <div class="progress progress-separated mb-3">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 60%" aria-label="Regular"></div>
+                        <div class="progress-bar bg-info" role="progressbar" style="width: 19%" aria-label="System"></div>
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 9%" aria-label="Shared"></div>
+                      </div>
+                      <div class="row">
+                        <div class="col-auto d-flex align-items-center pe-2">
+                          <span class="legend me-2 bg-success"></span>
+                          <span>Success</span>
+                          <span class="d-none d-md-inline d-lg-none d-xxl-inline ms-2 text-muted">915MB</span>
+                        </div>
+                        <div class="col-auto d-flex align-items-center px-2">
+                          <span class="legend me-2 bg-info"></span>
+                          <span>Info</span>
+                          <span class="d-none d-md-inline d-lg-none d-xxl-inline ms-2 text-muted">415MB</span>
+                        </div>
+                        <div class="col-auto d-flex align-items-center px-2">
+                          <span class="legend me-2 "></span>
+                          <span>Pause or Delayed</span>
+                          <span class="d-none d-md-inline d-lg-none d-xxl-inline ms-2 text-muted">201MB</span>
+                        </div>
+                        <div class="col-auto d-flex align-items-center ps-2">
+                          <span class="legend me-2 bg-warning"></span>
+                          <span>Error</span>
+                          <span class="d-none d-md-inline d-lg-none d-xxl-inline ms-2 text-muted">612MB</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+
+            <div class="col-md-12 col-lg-8">
+              <div class="card mb-3">
+                  <div class="card-header">
+                      <h3 class="card-title">Station Details</h3>
+                    </div>
+                  <div class="card-body">
+                      <h5 class="card-title">sub title</h5>
+                      <p class="card-text">Details about temperature</p>
+                  </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+              <div class="card mb-3">
+                <div class="card-header">
+                  <h3 class="card-title">Other Information</h3>
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">some title</h5>
+                  <p class="card-text">Details</p>
+              </div>
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+      </div>
+      <div id="needed_for_map_resize"></div> <!--this div is used in callbacks to force the map to redraw because of a leaflet bug --> 
+      <footer class="footer footer-transparent d-print-none">
+        <div class="container-xl">
+          <div class="row text-center align-items-center flex-row-reverse">
+            <div class="col-lg-auto ms-lg-auto">
+              <ul class="list-inline list-inline-dots mb-0">
+                <li class="list-inline-item"><a href="#" class="link-secondary">MABR</a></li>
+                <li class="list-inline-item"><a href="#" class="link-secondary">CANR</a></li>
+                <li class="list-inline-item"><a href="#" class="link-secondary" rel="noopener">GEO</a></li>
+              </ul>
+            </div>
+            <div class="col-12 col-lg-auto mt-3 mt-lg-0">
+              <ul class="list-inline list-inline-dots mb-0">
+                <li class="list-inline-item">
+                  Copyright &copy; 2024
+                  <a href="https://enviroweather.msu.edu" class="link-secondary">MSU Enviroweather</a>.
+                  <em>This site is currently for demonstration purposes only</em>
+                </li>
+                <li class="list-inline-item">
+                  <a href="#" class="link-secondary" rel="noopener">
+                    v0.2
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>

@@ -4,4 +4,5 @@ dash
 dash_ag_grid
 dash-leaflet
 dash-extensions
-# dash-mantine-components
+dash_bootstrap_components
+dash_template_rendering
