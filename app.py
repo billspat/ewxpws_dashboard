@@ -106,6 +106,5 @@ def resize_map(whatever):
 
       
 if __name__ == "__main__":
-    
-    DEBUG = getenv("DEBUG", default=True)
-    app.run(debug=DEBUG)
+    # debug = None required to respect DASH_DEBUG environment var (True /False)
+    app.run(debug=None)
