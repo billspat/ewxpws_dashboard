@@ -13,6 +13,7 @@
 
         <div class="collapse navbar-collapse" id="sidebar-menu">
           <ul class="navbar-nav pt-lg-3">
+
             <li class="nav-item">
               <a class="nav-link" href="./" >
                 <span class="nav-link-icon d-md-none d-lg-inline-block">                    
@@ -127,8 +128,7 @@
               <!-- ------table of stations------ -->
               <div class="col-lg-6">
                   <div class="card">
-                      <div class="card-body" >
-
+                      <div class="card-body m-0 p-0" >
                       {{ station_table | plotly }}
                       </div>
                   </div>
@@ -137,7 +137,7 @@
               <!-- ------ map  of stations------ -->
               <div class="col-lg-6">
                   <div class="card">
-                      <div class="card-body min-h-400" >
+                      <div class="card-body m-0 p-0" >
                           {{station_map | plotly}}
                       </div>
                   </div>
@@ -183,7 +183,9 @@
                     </div>
                   </div>
                 </div>
-                <div id="chart-Temperature-bg" class="chart-sm"></div>
+                <div id="chart-Temperature-bg" class="chart-sm">
+                  
+                </div>
               </div>
             </div>
             <div class="col-sm-6 col-lg-3">

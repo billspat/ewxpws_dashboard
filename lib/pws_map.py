@@ -58,7 +58,7 @@ def station_map(station_records, map_zoom = 7, center_coordinates = None):
             ],     
             center=center_coordinates,
             className = "w-100", 
-            style={'height': '500px', 'width': '100%'},  
+            style={'height': '400px', 'width': '100%'},  
             zoom=map_zoom ,
             invalidateSize = True         
         )
