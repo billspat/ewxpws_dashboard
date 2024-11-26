@@ -23,16 +23,16 @@
                 </span>
               </a>
             </li>
-            <li class="nav-item">
+            <!-- <li class="nav-item">
               <a class="nav-link" href="#" >
                 <span class="nav-link-icon d-md-none d-lg-inline-block">                    
                 </span>
                 <span class="nav-link-title">
-                  Weather
+                  --
                 </span>
               </a>
-            </li>
-            <li class="nav-item dropdown">
+            </li> -->
+            <!-- <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#navbar-base" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false" >
                 <span class="nav-link-icon d-md-none d-lg-inline-block">                    
                 </span>
@@ -62,7 +62,7 @@
                   </div>
                 </div>
               </div>
-            </li>
+            </li> -->
             <li class="nav-item">
               <a class="nav-link" href="#" >
                 <span class="nav-link-icon d-md-none d-lg-inline-block">                    
@@ -171,9 +171,9 @@
                     <div class="subheader">Temperature</div>
                   </div>
                   <div class="d-flex align-items-baseline">
-                    <div id="current-atmp" class="h1 mb-0 me-2">50.1</div>
+                    <div id="current-atmp" class="h1 mb-0 me-2">--</div>
                     <div class="me-auto">
-                      <span class="text-green d-inline-flex align-items-center lh-1">
+                      <span class="d-inline-flex align-items-center lh-1">
                         F                           
                       </span>
                     </div>
@@ -186,7 +186,7 @@
               <div class="card">
                 <div class="card-body">
                   <div class="d-flex align-items-center">
-                    <div class="subheader">Precipidation</div>
+                    <div class="subheader">Precipitation</div>
                     <div class="ms-auto lh-1">
                       <!-- example drop down in card sub-head that could change the units -->
                       <!-- <div class="dropdown">
@@ -359,20 +359,73 @@
             </div> -->
 
 
-            <!-- DAILY WEATHER wide data card-->
+            
+            <!-- DAILY WEATHER wide data card with tabs-->
 
             <div class="col-lg-12">
               <div class="row row-cards">
+
                 <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            Hourly Weather
-                        </div>
-                        <div class="card-body">
-                            <div  id = "daily_readings_table" class="table m-0 p-0"></div>                        
-                        </div>
+                  <div class="card">
+                    <div class="card-header">
+                      <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+
+                        <li class="nav-item" role="presentation">
+                          <a href="#tabs-weather-4" class="nav-link active" data-bs-toggle="tab" aria-selected="true" role="tab">Weather Table</a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                          <a href="#tabs-graph-4" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab">Weather Graph</a>
+                        </li>
+                        
+                        <li class="nav-item" role="presentation">
+                          <a href="#tabs-tomcast-4" class="nav-link" data-bs-toggle="tab" aria-selected="false" tabindex="-1" role="tab">TOMCAST</a>
+                        </li>
+                        
+                        <li class="nav-item dropdown">
+                          <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Models</a>
+                          <div class="dropdown-menu" style="">
+                            <a class="dropdown-item" href="#">
+                              mode 1
+                            </a>
+                            <a class="dropdown-item" href="#">
+                              model 2
+                            </a>
+                          </div>
+                        </li>
+                      </ul>
                     </div>
+
+                    <!-- tab contents-->
+                    <div class="card-body">
+                      <div class="tab-content">
+
+                        <!-- table -->
+                        <div class="tab-pane active show" id="tabs-weather-4" role="tabpanel">                          
+                          <div  id = "daily_readings_table" class="table m-0 p-0"></div>                       
+                        </div>
+
+                        <!-- graph -->
+                        <div class="tab-pane" id="tabs-graph-4" role="tabpanel">                          
+                          <div  id = "readings_graph" class="m-0 p-0">[graph here]</div>                       
+                        </div>
+
+                        <!-- TOMCAST -->
+                        <div class="tab-pane" id="tabs-tomcast-4" role="tabpanel">
+                          <div>
+                          <a href="#" class="btn btn-primary d-none d-sm-inline-block" id="run-tomcast-button">
+                            Run TOMCAST model
+                          </a>
+                          </div>
+                          <div id="tomcast-results">[Tomcast model results here]</div>
+                        </div>
+
+                      </div>
+                    </div>
+                  
+                  </div>
+
                 </div>
+
 
             <!-- wide data card-->
             <div class="col-lg-12">
