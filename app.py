@@ -1,9 +1,11 @@
 
 from os import getenv, path
+import pandas as pd
 from dash import ctx, dcc, Dash, html, Input, Output
 import dash_ag_grid as dag
 import dash_leaflet as dl
 import dash_bootstrap_components as dbc
+from dash_bootstrap_components import Table as dbcTable
 from dash_template_rendering import TemplateRenderer, render_dash_template_string
 
 
@@ -45,29 +47,34 @@ app.layout =  render_dash_template_string(get_template(template_file_path = "tem
 
 #### REACTIVITY 
 
+from lib.pws_components import readings_grid_view
 ### table row click, delivers a station code for later use
 @app.callback(
     Output("text_station_table_selection", "children"),
     Output("text_station_table_selection", "href"),
+    Output("station_type_cell", "children"),
     Output("daily_readings_table", "children"),
     Input("station_table", "selectedRows"),
     prevent_initial_call=True,
 )
-def station_table_row_data(row)->tuple[str,str,str]:
+def station_table_row_data(row)->tuple[str,str,str,str]:
     if row is None or row == []:
-        return ("","", "select a station")
+        return ("","", "", "select a station")
     # we got a list but just want one
-    try:
-        row = row[0]
-        station_code = row['station_code']
-        # try:
-        readings_table = yesterday_readings_table(station_code)
-        # except Exception as e:
-        #     readings_table = html.Div("no data")
-            
-        return (station_code, station_code, readings_table) 
-    except Exception as e:
-        return ("","", "select a station")
+    #try:
+    row = row[0]
+    station_code = row['station_code']
+    station_type = row['type']
+    # try:
+    readings_df = yesterday_readings_table(station_code)
+    if(readings_df is None or (type(readings_df) != type(pd.DataFrame([{}]))) or readings_df.empty):
+        readings_table = html.Div("no recent data", className="fw-bold")
+    else:
+        readings_table =  dbcTable.from_dataframe(readings_df)
+        
+    return (station_code, station_code, station_type, readings_table) 
+    #except Exception as e:
+    #    return ("","", e)
 
 
 ### map marker click

@@ -66,6 +66,14 @@ def get_all_stations(api_url:str = BASE_PWS_API_URL):
 
 
 def get_hourly_readings(station_code=None, start_date=None, end_date=None, api_url = BASE_PWS_API_URL):
+    """_summary_
+
+    Args:
+        station_code (_type_, optional): _description_. Defaults to None.
+        start_date (_type_, optional): _description_. Defaults to None.
+        end_date (_type_, optional): _description_. Defaults to None.
+        api_url (_type_, optional): _description_. Defaults to BASE_PWS_API_URL.
+    """
     
     EMPTY_DATA = [{}]
     
@@ -73,8 +81,8 @@ def get_hourly_readings(station_code=None, start_date=None, end_date=None, api_u
         return(EMPTY_DATA)
     
     if(not start_date or not end_date): 
-        start_date = str(date.today()- timedelta(days = 1))
-        end_date = str(date.today()- timedelta(days = 1))
+        start_date = str(date.today())
+        end_date = str(date.today())
 
     # check if start and end great than today
     url = f"{api_url}/weather/{station_code}/hourly?start={start_date}&end={end_date}"
@@ -88,7 +96,7 @@ def get_hourly_readings(station_code=None, start_date=None, end_date=None, api_u
 import pandas as pd
 
 def yesterday_readings(station_code=None):
-    """ get a data frame of weather.  When using this in the dash page, use 
+    """get a data frame of weather.  When using this in the dash page, use 
     the dash bootstrap component library convenience function
     df = yesterday_readings_table('MYSTATION')
     if df:
@@ -96,18 +104,22 @@ def yesterday_readings(station_code=None):
     else:
         html = "no readings"
     
+    Args:
+        station_code (_type_, optional): _description_. Defaults to None.    
+        
+    Returns:
+        always returns a data frame with weather data or empty   
     """
     
     if station_code:
         readings = get_hourly_readings(station_code)
         if readings:
             readings_df = pd.DataFrame(readings)
-
-            return(readings_df)
-        else:
-            return(None)
-    else:
-        return(None)
+            if not readings_df.empty:
+                return(readings_df)
+     
+    empty_df = pd.DataFrame([{}])   
+    return(empty_df)
     
       
 def get_station_temperature():

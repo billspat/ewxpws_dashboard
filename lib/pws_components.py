@@ -5,7 +5,9 @@ from lib.pwsapi import get_station_codes, get_station_data, get_all_stations
 from datetime import date, timedelta
 
 from .pwsapi import get_hourly_readings, yesterday_readings
-from dash_bootstrap_components import Table as dbcTable
+import dash_ag_grid as dag
+import pandas as pd
+# from dash_bootstrap_components import Table as dbcTable
 
 
 ## Config
@@ -18,8 +20,7 @@ pws_title = html.H2(["MSU Enviroweather ", html.B(" Personal Weather Station Das
 
 YESTERDAY = date.today() - timedelta(days = 1)
 
-import dash_ag_grid as dag
-import pandas as pd
+
 def station_table(station_records):
     
     station_data = list(station_records.values())
@@ -100,14 +101,58 @@ def station_table_narrow(station_records):
     return(grid)
 
 
+
+
 def yesterday_readings_table(station_code):
     if station_code:
-        # get a data frame of readings, or None
-        df = yesterday_readings(station_code)
-        if(not df):
-            return("No Data")
+        # get a data frame of readings or empty df
+        weather_df = yesterday_readings(station_code)
+        if(weather_df is None or (type(weather_df) != type(pd.DataFrame([{}]))) or weather_df.empty):
+            return("No Data")        
         else:
-            df_table = dbcTable.from_dataframe(df)
-            return(df_table)
+            view_df = pd.DataFrame().assign(
+                date = weather_df['represented_date'],
+                hour = weather_df.represented_hour, 
+                atmp = weather_df.atmp_avg_hourly,
+                relh = weather_df.relh_avg_hourly,
+                pcpn = round(weather_df.pcpn_total_hourly,3),
+                lws_pwet = weather_df.lws_pwet_hourly,
+                wspd = weather_df.wspd_avg_hourly,
+                wspd_max = weather_df.wspd_max_hourly
+            )
+            return(view_df)
+        
+            #df_table = dbcTable.from_dataframe(df)
+            #return(df_table)
     else:
-        return("Select a station")
+        return("Select a station code")
+    
+
+from datetime import time
+
+
+
+def readings_grid_view(weather_df):
+    """given data frame of weather from database, convert to presentation grid"""
+    table_df = pd.DataFrame().assign(
+        date = weather_df.represented_date,
+        hour = f"{str(time(hour = weather_df.represented_hour-1, minute=0))} - {str(time(hour = weather_df.represented_hour-1, minute=59))}", 
+        atmp = weather_df.atmp_avg_hourly,
+        relh = weather_df.relh_avg_hourly,
+        pcpn = weather_df.pcpn_total_hourly,
+        lws = weather_df.lws_pwet_hourly,
+        wspd = weather_df.wspd_avg_hourly,
+        wspd_max = weather_df.wspd_max_hourly
+    )
+
+    fields = list(table_df.columns)    
+    column_defs = [{"field": f} for f in fields]
+    grid = dag.AgGrid(
+        id="weather_readings",
+        rowData=table_df,
+        columnDefs=column_defs,
+        defaultColDef={"resizable": True, "sortable": True, "filter": True},
+        columnSize="sizeToFit",
+        dashGridOptions={"rowSelection": "single", "cellSelection": False, "animateRows": False},
+    )   
+    return(grid)
