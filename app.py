@@ -70,7 +70,7 @@ def station_table_row_data(row)->tuple[str,str,str,str]:
     if(readings_df is None or (type(readings_df) != type(pd.DataFrame([{}]))) or readings_df.empty):
         readings_table = html.Div("no recent data", className="fw-bold")
     else:
-        readings_table =  dbcTable.from_dataframe(readings_df)
+        readings_table =  dbcTable.from_dataframe(readings_df, responsive=True)
         
     return (station_code, station_code, station_type, readings_table) 
     #except Exception as e:

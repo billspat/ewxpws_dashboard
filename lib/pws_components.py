@@ -120,6 +120,7 @@ def yesterday_readings_table(station_code):
                 wspd = weather_df.wspd_avg_hourly,
                 wspd_max = weather_df.wspd_max_hourly
             )
+            view_df = view_df.sort_values(by=['hour'], ascending=False)
             return(view_df)
         
             #df_table = dbcTable.from_dataframe(df)
@@ -131,6 +132,8 @@ def yesterday_readings_table(station_code):
 from datetime import time
 
 
+# this currently is not used.   Need to determine how to insert a whole AG grid into html 
+    # there is a "I can't json this" error
 
 def readings_grid_view(weather_df):
     """given data frame of weather from database, convert to presentation grid"""
