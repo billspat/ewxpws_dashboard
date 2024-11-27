@@ -75,7 +75,7 @@ def request_tomcast_api(station_code:str, select_date:datetime|date|None = None,
     # allow both datetime and dates 
     if select_date is None:
         # must set timezone explicitly since no guarantee tz of server (or if it's UTC)
-        select_date = datetime.now(tz=michigan_time_zone).date()
+        select_date = datetime.now(tz=ZoneInfo(michigan_time_zone_key)).date()
     elif isinstance(select_date, datetime):
         select_date = select_date.date()
         
