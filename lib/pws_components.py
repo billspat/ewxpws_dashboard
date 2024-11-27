@@ -160,6 +160,43 @@ def readings_grid_view(weather_df):
     )   
     return(grid)
 
+
+import dash_bootstrap_components as dbc
+from dash import dcc
+from datetime import date
+from zoneinfo import ZoneInfo
+
+def tomcast_form():
+    today =  datetime.now(tz=ZoneInfo('US/Eastern')).date().strftime("%Y-%m-%d")
+    
+    # using bootstrap classes here becuase the default style is large and thin which doesn't match
+    form = dbc.Row(
+        [
+            dbc.Col(
+                dcc.DatePickerSingle(id='tomcast-date-picker',
+                                     display_format='YYYY-MM-DD',
+                                     first_day_of_week = 1,                                       
+                                     placeholder="Select Date",
+                                     date = today, 
+                                     className="fs-6 fw-semibold"),
+                className="me-3",
+                width = "auto"
+
+                ),
+            dbc.Col(
+                dbc.Button("Run Tomcast for Select Date", 
+                               id="run-tomcast-button", 
+                               class_name="btn btn-success d-none d-sm-inline-block"), 
+                width="auto"
+                ),
+        ],
+        className="g-2",
+        )
+    
+    
+    return(form)
+    
+    
 from .ewx_api import request_tomcast_api, format_tomcast_model_output
 def run_tomcast_model(station_code:str, select_date:date):
     """get simple tomcast model output and format for Dash.  

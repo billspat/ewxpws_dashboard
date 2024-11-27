@@ -2,7 +2,7 @@
 from os import getenv, path
 from datetime import date
 import pandas as pd
-from dash import ctx, dcc, Dash, html, Input, Output
+from dash import ctx, dcc, Dash, html, Input, Output, State
 import dash_ag_grid as dag
 import dash_leaflet as dl
 import dash_bootstrap_components as dbc
@@ -10,7 +10,7 @@ from dash_bootstrap_components import Table as dbcTable
 from dash_template_rendering import TemplateRenderer, render_dash_template_string
 
 
-from lib.pws_components import pws_title, station_table, station_table_narrow, yesterday_readings_table, run_tomcast_model
+from lib.pws_components import pws_title, station_table, station_table_narrow, yesterday_readings_table, run_tomcast_model, tomcast_form
 from lib.pwsapi import get_all_stations
 from lib.pws_map import station_map, station_marker_id, station_from_marker_id
 
@@ -43,6 +43,7 @@ def get_template(template_file_path:str = "templates/main.html")->str:
 app.layout =  render_dash_template_string(get_template(template_file_path = "templates/main.html"),
     station_table = station_table_narrow(station_records()),
     station_map = station_map(station_records()),
+    tomcast_form = tomcast_form()
   )
  
 
@@ -51,16 +52,17 @@ app.layout =  render_dash_template_string(get_template(template_file_path = "tem
 from lib.pws_components import readings_grid_view
 ### table row click, delivers a station code for later use
 @app.callback(
-    Output("text_station_table_selection", "children"),
+    [Output("text_station_table_selection", "children"),
     Output("text_station_table_selection", "href"),
     Output("station_type_cell", "children"),
     Output("daily_readings_table", "children"),
+    Output('tomcast-results', 'children',allow_duplicate=True)],
     Input("station_table", "selectedRows"),
     prevent_initial_call=True,
 )
 def station_table_row_data(row)->tuple[str,str,str,str]:
     if row is None or row == []:
-        return ("","", "", "select a station")
+        return ("","", "",  dbc.Alert("select a station above", color="warning"),"")
     # we got a list but just want one
     #try:
     row = row[0]
@@ -73,7 +75,7 @@ def station_table_row_data(row)->tuple[str,str,str,str]:
     else:
         readings_table =  dbcTable.from_dataframe(readings_df, responsive=True)
         
-    return (station_code, station_code, station_type, readings_table) 
+    return (station_code, station_code, station_type, readings_table, "") 
     #except Exception as e:
     #    return ("","", e)
 
@@ -96,13 +98,28 @@ def display_marker_click(*args):
         # return(station_code, {"function": f"params.data.station_code == '{station_code}'"})   
 
 
+
 ##### TOMCAST
+
 @app.callback(
-    Output('tomcast-results', 'children'),
+    Output('tomcast-results', 'children',allow_duplicate=True),
     Input('run-tomcast-button','n_clicks'),
+    State("text_station_table_selection", "children"),
+    State("tomcast-date-picker", "date"),
     prevent_initial_call=True,
     )
 def tomcast(n_clicks, station_code = 'EWXDAVIS01', select_date = date(2024, 8, 1)):
+    
+    if not station_code or station_code is None:
+        return(dbc.Alert("select a station above", color="error"))
+    
+    if not select_date or not(isinstance(select_date, str)):
+        print(f"got this for select_date: {select_date}")
+        # select_date = date(2024, 8, 1)
+
+    if isinstance(select_date,str):
+        select_date = date.fromisoformat(select_date)
+    
     tomcast_output_df = run_tomcast_model(station_code, select_date)
 
     if isinstance(tomcast_output_df, pd.DataFrame):

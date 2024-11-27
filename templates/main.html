@@ -411,12 +411,13 @@
 
                         <!-- TOMCAST -->
                         <div class="tab-pane" id="tabs-tomcast-4" role="tabpanel">
-                          <div>
-                          <a href="#" class="btn btn-primary d-none d-sm-inline-block" id="run-tomcast-button">
-                            Run TOMCAST model
-                          </a>
+                          <div id="tomcast_form">
+                            {{ tomcast_form | plotly}}
                           </div>
-                          <div id="tomcast-results">[Tomcast model results here]</div>
+                          <div>
+                          </div>
+                          
+                          <div id="tomcast-results"></div>
                         </div>
 
                       </div>
