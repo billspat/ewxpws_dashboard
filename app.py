@@ -1,5 +1,6 @@
 
 from os import getenv, path
+from datetime import date
 import pandas as pd
 from dash import ctx, dcc, Dash, html, Input, Output
 import dash_ag_grid as dag
@@ -9,7 +10,7 @@ from dash_bootstrap_components import Table as dbcTable
 from dash_template_rendering import TemplateRenderer, render_dash_template_string
 
 
-from lib.pws_components import pws_title, station_table, station_table_narrow, yesterday_readings_table
+from lib.pws_components import pws_title, station_table, station_table_narrow, yesterday_readings_table, run_tomcast_model
 from lib.pwsapi import get_all_stations
 from lib.pws_map import station_map, station_marker_id, station_from_marker_id
 
@@ -93,7 +94,24 @@ def display_marker_click(*args):
         # station_record = station_records[station_code]
         return({"function": f"params.data.station_code == '{station_code}'"})            
         # return(station_code, {"function": f"params.data.station_code == '{station_code}'"})   
-              
+
+
+##### TOMCAST
+@app.callback(
+    Output('tomcast-results', 'children'),
+    Input('run-tomcast-button','n_clicks'),
+    prevent_initial_call=True,
+    )
+def tomcast(n_clicks, station_code = 'EWXDAVIS01', select_date = date(2024, 8, 1)):
+    tomcast_output_df = run_tomcast_model(station_code, select_date)
+
+    if isinstance(tomcast_output_df, pd.DataFrame):
+        tomcast_table = dbcTable.from_dataframe(tomcast_output_df, responsive=True)
+        return(tomcast_table)
+    else: # assume it's not a data frame, must be string with message
+        return(tomcast_output_df)
+
+                  
 if __name__ == "__main__":
     # debug = None required to respect DASH_DEBUG environment var (True /False)
     app.run(debug=None)

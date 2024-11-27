@@ -159,3 +159,24 @@ def readings_grid_view(weather_df):
         dashGridOptions={"rowSelection": "single", "cellSelection": False, "animateRows": False},
     )   
     return(grid)
+
+from .ewx_api import request_tomcast_api, format_tomcast_model_output
+def run_tomcast_model(station_code:str, select_date:date):
+    """get simple tomcast model output and format for Dash.  
+    example use tc = request_tomcast_api(station_code='EWXDAVIS01', select_date=date(2024, 8, 1))
+    tc_df = format_tom
+
+    Args:
+        station_code (str): _description_
+        select_date (date): _description_
+    """
+    # TODO validate station code
+    # must be a data TODO validate date
+    if isinstance(select_date, str):
+        select_date = date.fromisoformat(select_date)
+        
+    tc = request_tomcast_api(station_code, select_date)
+    tc_df = format_tomcast_model_output(station_code = station_code, tomcast_api_output=tc)
+    
+    return(tc_df)
+    
