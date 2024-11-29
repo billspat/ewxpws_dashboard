@@ -16,10 +16,10 @@ from pandas import DataFrame
 ####### MODULE STYLE ##############
 
 #### CONSTANTS
-BASE_EWX_API_URL=getenv('ENVIROWEATHER_API_URL', 'https://enviroweather.msu.edu/ewx-api/api')
-BASE_EWX_RM_API_URL=getenv('ENVIROWEATHER_API_URL', 'https://enviroweather.msu.edu/rm-api/api')
+BASE_EWX_API_URL=getenv('BASE_EWX_API_URL', 'https://enviroweather.msu.edu/ewx-api/api')
+BASE_RM_API_URL=getenv('BASE_RM_API_URL', 'https://enviroweather.msu.edu/rm-api/api')
 
-michigan_time_zone_key = 'US/Eastern'
+MICHIGAN_TIME_ZONE_KEY = 'US/Eastern'
 global current_token_value
 current_token_value = None
         
@@ -56,14 +56,14 @@ def get_result_model_keys(base_ewx_api_url:str = BASE_EWX_API_URL):
     return(response.text)
 
     
-def request_tomcast_api(station_code:str, select_date:datetime|date|None = None, timezone = "America/Detroit", weather:bool = True, base_ewx_rm_api_url:str = BASE_EWX_RM_API_URL, base_ewx_api_url:str = BASE_EWX_API_URL ):
+def request_tomcast_api(station_code:str, select_date:datetime|date|None = None, timezone = "America/Detroit", weather:bool = True, BASE_RM_API_URL:str = BASE_RM_API_URL, base_ewx_api_url:str = BASE_EWX_API_URL ):
     """hit the tomcast api using the given station_code and date.  If not date is given, find todays date in the given timezone
     Args:
         station_code (str): PWS station code valid from database
         select_date (datetime | date | None, optional): optional date or datetime. Defaults to None.  If none sent, creates current date using timezone sent
         timezone (str, optional): timezone string to use when determine today's date. Only used if no date was sent.  Defaults to Michigan / EasternUS time zone
         weather (bool, optional): ask the api to include weather data with the model output. Defaults to True
-        base_ewx_rm_api_url (str, optional): url to use for the rm api (model). Defaults to module constant BASE_EWX_RM_API_URL, which is production api
+        BASE_RM_API_URL (str, optional): url to use for the rm api (model). Defaults to module constant BASE_RM_API_URL, which is production api
         base_ewx_api_url (str, optional): url to use for ewx ap to get token. Defaults to module constant BASE_EWX_API_URL, which is production api
     Returns:
         dictionary from api as described by the RM api
@@ -75,7 +75,7 @@ def request_tomcast_api(station_code:str, select_date:datetime|date|None = None,
     # allow both datetime and dates 
     if select_date is None:
         # must set timezone explicitly since no guarantee tz of server (or if it's UTC)
-        select_date = datetime.now(tz=ZoneInfo(michigan_time_zone_key)).date()
+        select_date = datetime.now(tz=ZoneInfo(MICHIGAN_TIME_ZONE_KEY)).date()
     elif isinstance(select_date, datetime):
         select_date = select_date.date()
         
@@ -83,7 +83,7 @@ def request_tomcast_api(station_code:str, select_date:datetime|date|None = None,
     
     #example https://enviroweather.msu.edu/rm-api/api/db2/run?stationCode=EWXDAVIS01&stationType=6&selectDate=2024-08-01&resultModelCode=tomcast"
 
-    url = f"{base_ewx_rm_api_url}/db2/run?stationCode={station_code}&stationType={station_type}&selectDate={select_date_str}&resultModelCode={result_model_code}&weather={weather}"    
+    url = f"{BASE_RM_API_URL}/db2/run?stationCode={station_code}&stationType={station_type}&selectDate={select_date_str}&resultModelCode={result_model_code}&weather={weather}"    
     ewx_token = token_value(base_ewx_api_url)
     headers = {
         'Accept': "application/json",
@@ -121,7 +121,7 @@ def format_tomcast_model_output(station_code, tomcast_api_output):
 
 #     # class constants    
 #     BASE_EWX_API_URL = getenv('ENVIROWEATHER_API_URL', 'https://enviroweather.msu.edu/ewx-api/api')
-#     BASE_EWX_RM_API_URL = getenv('ENVIROWEATHER_API_URL', 'https://enviroweather.msu.edu/rm-api/api')
+#     BASE_RM_API_URL = getenv('ENVIROWEATHER_API_URL', 'https://enviroweather.msu.edu/rm-api/api')
 #     michigan_time_zone = ZoneInfo("America/New_York")
 
 #     _current_token_value = ""
