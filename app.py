@@ -10,7 +10,7 @@ from dash_bootstrap_components import Table as dbcTable
 from dash_template_rendering import TemplateRenderer, render_dash_template_string
 
 
-from lib.pws_components import pws_title, station_table, station_table_narrow, yesterday_readings_table, run_tomcast_model, tomcast_form
+from lib.pws_components import pws_title, station_table, station_table_narrow, yesterday_readings_table, run_tomcast_model, tomcast_form, latest_readings_values
 from lib.pwsapi import get_all_stations
 from lib.pws_map import station_map, station_marker_id, station_from_marker_id
 
@@ -65,19 +65,56 @@ def station_table_row_data(row)->tuple[str,str,str,str]:
         return ("","", "",  dbc.Alert("select a station above", color="warning"),"")
     # we got a list but just want one
     #try:
-    row = row[0]
-    station_code = row['station_code']
-    station_type = row['type']
-    # try:
-    readings_df = yesterday_readings_table(station_code)
-    if(readings_df is None or (type(readings_df) != type(pd.DataFrame([{}]))) or readings_df.empty):
-        readings_table = html.Div("no recent data", className="fw-bold")
+    if isinstance(row,list): row = row[0]
+    if isinstance(row, dict) and 'station_code' in row:
+        station_code = row['station_code']
+        station_type = row['type']
+    
+        # try:
+        readings_df = yesterday_readings_table(station_code)
+        if(readings_df is None or (type(readings_df) != type(pd.DataFrame([{}]))) or readings_df.empty):
+            readings_table = html.Div("no recent data", className="fw-bold")
+        else:
+            readings_table =  dbcTable.from_dataframe(readings_df, responsive=True)
+            
     else:
-        readings_table =  dbcTable.from_dataframe(readings_df, responsive=True)
+        station_code = ""
+        station_type = ""
+        readings_table = html.Div("invalid station selection", className="fw-bold")    
         
     return (station_code, station_code, station_type, readings_table, "") 
     #except Exception as e:
     #    return ("","", e)
+
+
+### latest weather stats
+@app.callback(
+    [
+        Output("latest_reading_date_cell", "children"),
+        Output("latest-atmp", "children"),
+        Output("latest-pcpn", "children"),
+        Output("latest-relh", "children"),
+        Output("latest-wspd", "children"),
+    ],
+    Input("station_table", "selectedRows"),
+    prevent_initial_call=True,
+)
+def station_latest_weather(row):
+    if row is None or row == []:
+        return ("","--","--","--","--")
+    
+    if isinstance(row,list): row = row[0]
+
+    if isinstance(row, dict) and 'station_code' in row:        
+        latest_reading = latest_readings_values(row['station_code'])
+        if isinstance(latest_reading, dict) and 'atmp' in latest_reading: 
+            return (latest_reading['local_datetime'], 
+                    latest_reading['atmp'], 
+                    latest_reading['pcpn'], 
+                    latest_reading['relh'],
+                    latest_reading['wspd']                    
+                    )        
+    return ("no recent readings","--","--","--","--")
 
 
 ### map marker click

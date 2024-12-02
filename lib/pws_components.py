@@ -4,7 +4,7 @@ from dash import html
 from lib.pwsapi import get_station_codes, get_station_data, get_all_stations
 from datetime import date, timedelta
 
-from .pwsapi import get_hourly_readings, yesterday_readings
+from .pwsapi import get_hourly_readings, yesterday_readings, latest_readings
 import dash_ag_grid as dag
 import pandas as pd
 # from dash_bootstrap_components import Table as dbcTable
@@ -101,6 +101,14 @@ def station_table_narrow(station_records):
     return(grid)
 
 
+def latest_readings_values(station_code, threshold_data_note_recent_enough_hours = 6):
+    """get latest reading but check if it's too old for the UI to display"""
+    r = latest_readings(station_code = station_code)
+    
+    if 'minutes_since_latest_reading' in r and r['minutes_since_latest_reading'] < threshold_data_note_recent_enough_hours*60:
+        return(r) 
+    else:
+        return {}
 
 
 def yesterday_readings_table(station_code):

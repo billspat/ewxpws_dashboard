@@ -121,7 +121,21 @@ def yesterday_readings(station_code=None):
     empty_df = pd.DataFrame([{}])   
     return(empty_df)
     
-      
+
+def latest_readings(station_code=None, api_url = BASE_PWS_API_URL):
+    EMPTY_DATA = [{}]
+    
+    if(not station_code):
+        return(EMPTY_DATA)
+    
+    url = f"{api_url}/weather/{station_code}/latest"
+    r = requests.get(url)
+    if r.status_code == 200:
+        return(r.json())
+    else:
+        return(EMPTY_DATA)
+    
+         
 def get_station_temperature():
     # invoke station readings, and filter out just atmp
     return None
