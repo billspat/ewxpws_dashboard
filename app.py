@@ -100,6 +100,9 @@ def station_table_row_data(row)->tuple[str,str,str,str]:
     prevent_initial_call=True,
 )
 def station_latest_weather(row):
+    
+    from datetime import datetime
+    
     if row is None or row == []:
         return ("","--","--","--","--")
     
@@ -108,11 +111,13 @@ def station_latest_weather(row):
     if isinstance(row, dict) and 'station_code' in row:        
         latest_reading = latest_readings_values(row['station_code'])
         if isinstance(latest_reading, dict) and 'atmp' in latest_reading: 
-            return (latest_reading['local_datetime'], 
-                    latest_reading['atmp'], 
-                    latest_reading['pcpn'], 
-                    latest_reading['relh'],
-                    latest_reading['wspd']                    
+            latest_reading_dateime = datetime.fromisoformat(latest_reading['local_datetime'])
+            formatted_datetime = latest_reading_dateime.strftime("%I:%M %p %m-%d-%Y")
+            return (formatted_datetime , 
+                    round(latest_reading['atmp'],1), 
+                    round(latest_reading['pcpn'],1), 
+                    round(latest_reading['relh'],1),
+                    round(latest_reading['wspd'],1)                    
                     )        
     return ("no recent readings","--","--","--","--")
 
