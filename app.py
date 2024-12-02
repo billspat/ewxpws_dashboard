@@ -13,6 +13,7 @@ from dash_template_rendering import TemplateRenderer, render_dash_template_strin
 from lib.pws_components import pws_title, station_table, station_table_narrow, yesterday_readings_table, run_tomcast_model, tomcast_form, latest_readings_values
 from lib.pwsapi import get_all_stations
 from lib.pws_map import station_map, station_marker_id, station_from_marker_id
+from lib.converters import degree2compass, kph2mph, c2f, mm2inch
 
 ### CONFIG
 ag_hall_coordinates = [42.73104, -84.47951]
@@ -95,6 +96,7 @@ def station_table_row_data(row)->tuple[str,str,str,str]:
         Output("latest-pcpn", "children"),
         Output("latest-relh", "children"),
         Output("latest-wspd", "children"),
+        Output("latest-wdir", "children"),
     ],
     Input("station_table", "selectedRows"),
     prevent_initial_call=True,
@@ -104,7 +106,7 @@ def station_latest_weather(row):
     from datetime import datetime
     
     if row is None or row == []:
-        return ("","--","--","--","--")
+        return ("","--","--","--","--", "")
     
     if isinstance(row,list): row = row[0]
 
@@ -114,12 +116,13 @@ def station_latest_weather(row):
             latest_reading_dateime = datetime.fromisoformat(latest_reading['local_datetime'])
             formatted_datetime = latest_reading_dateime.strftime("%I:%M %p %m-%d-%Y")
             return (formatted_datetime , 
-                    round(latest_reading['atmp'],1), 
-                    round(latest_reading['pcpn'],1), 
+                    round(c2f(latest_reading['atmp']),1), 
+                    round(mm2inch(latest_reading['pcpn']),1), 
                     round(latest_reading['relh'],1),
-                    round(latest_reading['wspd'],1)                    
+                    round(kph2mph(latest_reading['wspd']),1),
+                    degree2compass(latest_reading['wdir'])  
                     )        
-    return ("no recent readings","--","--","--","--")
+    return ("no recent readings","--","--","--","--", "")
 
 
 ### map marker click
