@@ -1,5 +1,7 @@
 
 from os import getenv, path
+from dotenv import load_dotenv
+load_dotenv()
 from datetime import date
 import pandas as pd
 from dash import ctx, dcc, Dash, html, Input, Output, State
@@ -20,12 +22,16 @@ ag_hall_coordinates = [42.73104, -84.47951]
 bs53css = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
 
 app = Dash(__name__, prevent_initial_callbacks=True,  external_stylesheets= [bs53css])  #dbc.themes.BOOTSTRAP
+
+APP_PATH =  path.abspath(path.dirname(__file__))
+TEMPLATES_DIR = getenv('DASH_TEMPLATE_DIR', path.join(APP_PATH, "templates"))
+
 TemplateRenderer(dash=app)
 
 from flask_caching import Cache
 cache = Cache(app.server, config={
     'CACHE_TYPE': 'filesystem',
-    'CACHE_DIR': 'cache-directory'
+    'CACHE_DIR': getenv('DASH_CACHE', path.join(APP_PATH, 'cache-directory'))
 })
 
 TIMEOUT:int = 60
@@ -35,13 +41,13 @@ def station_records()->list:
     return(get_all_stations())
 
 @cache.memoize(timeout=TIMEOUT)
-def get_template(template_file_path:str = "templates/main.html")->str:
-  with open(template_file_path) as template_file:
+def get_template(template_file, template_dir:str = TEMPLATES_DIR)->str:
+  with open(path.join(template_dir, template_file)) as template_file:
     main_template:str = template_file.read()
   return(main_template)
   
     
-app.layout =  render_dash_template_string(get_template(template_file_path = "templates/main.html"),
+app.layout =  render_dash_template_string(get_template(template_file = "main.html"),
     station_table = station_table_narrow(station_records()),
     station_map = station_map(station_records()),
     tomcast_form = tomcast_form()

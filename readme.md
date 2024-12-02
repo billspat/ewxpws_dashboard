@@ -27,4 +27,16 @@ To run the app in development mode on your computer:
 - visit the development version of the website on.    
 
 
+## Run
+
+Dash will use the env variables `PORT` and `HOST`.  This app will use env vars 
+
+- `DASH_TEMPLATE_DIR` html templates, default is `./templates` in app root dir (currently on main.html, not that useful)
+- `DASH_CACHE` path to keep the caching for memoizing callbacks, default `./cache_directory` in app root dir
+
+to run the app from any directory, given a virtual environment in `./.venv`, :
+
+```
+export APPDIR=$HOME/path/to/ewxpws_dashboard; export HOST='0.0.0.0'; export PORT=8002, export DASH_DEBUG=True; $APPDIR/.venv/bin/python $APPDIR/app.py
+```
 
