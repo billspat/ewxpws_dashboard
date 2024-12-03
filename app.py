@@ -12,7 +12,7 @@ from dash_bootstrap_components import Table as dbcTable
 from dash_template_rendering import TemplateRenderer, render_dash_template_string
 
 
-from lib.pws_components import pws_title, station_table, station_table_narrow, yesterday_readings_table, run_tomcast_model, tomcast_form, latest_readings_values
+from lib.pws_components import pws_title, station_table, station_table_narrow, yesterday_readings_table, tomcast_model, tomcast_form, latest_readings_values
 from lib.pwsapi import get_all_stations
 from lib.pws_map import station_map, station_marker_id, station_from_marker_id
 from lib.converters import degree2compass, kph2mph, c2f, mm2inch
@@ -150,8 +150,7 @@ def display_marker_click(*args):
 
 
 
-##### TOMCAST
-
+##### TOMCAST 
 @app.callback(
     Output('tomcast-results', 'children',allow_duplicate=True),
     Input('run-tomcast-button','n_clicks'),
@@ -159,26 +158,17 @@ def display_marker_click(*args):
     State("tomcast-date-picker", "date"),
     prevent_initial_call=True,
     )
-def tomcast(n_clicks, station_code = 'EWXDAVIS01', select_date = date(2024, 8, 1)):
-    
-    if not station_code or station_code is None:
+def tomcast(n_clicks, station_code, select_date):
+    # input checking 
+    if not station_code:
         return(dbc.Alert("select a station above", color="error"))
     
     if not select_date or not(isinstance(select_date, str)):
-        print(f"got this for select_date: {select_date}")
-        # select_date = date(2024, 8, 1)
-
-    if isinstance(select_date,str):
-        select_date = date.fromisoformat(select_date)
+        return(dbc.Alert("select a date and click 'run tomcast'"))
     
-    tomcast_output_df = run_tomcast_model(station_code, select_date)
-
-    if isinstance(tomcast_output_df, pd.DataFrame):
-        tomcast_table = dbcTable.from_dataframe(tomcast_output_df, responsive=True)
-        return(tomcast_table)
-    else: # assume it's not a data frame, must be string with message
-        return(tomcast_output_df)
-
+    # run model and format output
+    return(tomcast_model(station_code, select_date))
+    
                   
 if __name__ == "__main__":
     # debug = None required to respect DASH_DEBUG environment var (True /False)

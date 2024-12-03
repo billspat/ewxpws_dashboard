@@ -11,6 +11,7 @@ import requests, json
 load_dotenv()
 from os import getenv
 from pandas import DataFrame
+from typing import Union
 
 
 ####### MODULE STYLE ##############
@@ -18,8 +19,10 @@ from pandas import DataFrame
 #### CONSTANTS
 BASE_EWX_API_URL=getenv('BASE_EWX_API_URL', 'https://enviroweather.msu.edu/ewx-api/api')
 BASE_RM_API_URL=getenv('BASE_RM_API_URL', 'https://enviroweather.msu.edu/rm-api/api')
-
+PWS_STATION_TYPE = 6
 MICHIGAN_TIME_ZONE_KEY = 'US/Eastern'
+MICHIGAN_TIME_ZONE = ZoneInfo(MICHIGAN_TIME_ZONE_KEY)
+
 global current_token_value
 current_token_value = None
         
@@ -48,179 +51,88 @@ def get_result_model_keys(base_ewx_api_url:str = BASE_EWX_API_URL):
     ewx_token = token_value(base_ewx_api_url)
     payload = {}
     
-    headers = {
-        'Accept': "application/json",
-        'Authorization': f"Bearer {ewx_token}"
-        }
-    response = requests.request("GET", url, headers=headers, data=payload)
+    response = requests.request("GET", 
+                                url, 
+                                headers=ewx_headers(base_ewx_api_url), 
+                                data=payload)
     return(response.text)
 
+
+def ewx_headers(base_ewx_api_url:str = BASE_EWX_API_URL):
+    """ standard headers used in all requests"""
+    return {
+        'Accept': "application/json",
+        'Authorization': f"Bearer ${token_value(base_ewx_api_url)}"
+        }
+
+def date_to_api_str(d):
+    """ convert date to correct type and format for use in EWX API's
     
-def request_tomcast_api(station_code:str, select_date:datetime|date|None = None, timezone = "America/Detroit", weather:bool = True, BASE_RM_API_URL:str = BASE_RM_API_URL, base_ewx_api_url:str = BASE_EWX_API_URL ):
-    """hit the tomcast api using the given station_code and date.  If not date is given, find todays date in the given timezone
+    assumes the date in the time zone for the station
+    
+    """
+    if d is None:
+    # must set timezone explicitly since no guarantee tz of server (or if it's UTC)
+        d = datetime.now(tz=MICHIGAN_TIME_ZONE).date()
+    elif isinstance(d, datetime):
+        select_date = select_date.date()
+    
+    d_str = d.strftime("%Y-%m-%d")
+    return(d)
+
+    
+def ewx_request(url:str,base_ewx_api_url:str = BASE_EWX_API_URL):
+    """issue a standard request to EWX API given a url crafted for a specific model
+
+    Args:
+        url (str): URL for a specific model type with all parameters in place
+        base_ewx_api_url (str, optional): api to get a token from, defaults to BASE_EWX_API_URL.
+
+        should raise errors if bad HTTP or other reason, but for this POC, just
+        return data or nothing
+        
+    Returns:
+        ANY: the 'data' element of a standard RM-API array output
+    """
+    headers = ewx_headers(base_ewx_api_url)
+    payload = {}
+    response = requests.request("GET", url, headers=headers, data=payload)
+    if response.status_code == 200:
+        response_data = response.json()
+        # response_data = json.loads(response_json)
+        
+        if 'data' in response_data:
+            return(response_data['data'])
+
+    #TODO handle errors, http errors and errors embedded in
+    
+    print(f"request error {response.status_code} {response.text} url {url}")
+    return None
+
+
+def tomcast(station_code:str, select_date:Union[datetime,date,None] = None, weather:bool = True, base_rm_api_url:str = BASE_RM_API_URL, base_ewx_api_url:str = BASE_EWX_API_URL, ):
+    """generate model URL for the TOMCAST model.   Date optional (will use today's date if none given)
+    
     Args:
         station_code (str): PWS station code valid from database
         select_date (datetime | date | None, optional): optional date or datetime. Defaults to None.  If none sent, creates current date using timezone sent
-        timezone (str, optional): timezone string to use when determine today's date. Only used if no date was sent.  Defaults to Michigan / EasternUS time zone
         weather (bool, optional): ask the api to include weather data with the model output. Defaults to True
-        BASE_RM_API_URL (str, optional): url to use for the rm api (model). Defaults to module constant BASE_RM_API_URL, which is production api
-        base_ewx_api_url (str, optional): url to use for ewx ap to get token. Defaults to module constant BASE_EWX_API_URL, which is production api
-    Returns:
-        dictionary from api as described by the RM api
-    """
-    # model params
-    station_type:str = "6"  # magic number for all PWS stations
-    result_model_code:str = "tomcast"
-    
-    # allow both datetime and dates 
-    if select_date is None:
-        # must set timezone explicitly since no guarantee tz of server (or if it's UTC)
-        select_date = datetime.now(tz=ZoneInfo(MICHIGAN_TIME_ZONE_KEY)).date()
-    elif isinstance(select_date, datetime):
-        select_date = select_date.date()
+        base_rm_api_url (str, optional): url to use for the rm api (model). Defaults to module constant BASE_RM_API_URL, which is production api
+        base_ewx_api_url (str, optional): api to get a token from, defaults to BASE_EWX_API_URL.
         
-    select_date_str = select_date.strftime("%Y-%m-%d")
+    Returns:
+        Pandas DataFrame to send to UI for formatting
+    """
+    # model params    
+    result_model_code:str = "tomcast"        
+    select_date_str = date_to_api_str(select_date)
     
     #example https://enviroweather.msu.edu/rm-api/api/db2/run?stationCode=EWXDAVIS01&stationType=6&selectDate=2024-08-01&resultModelCode=tomcast"
+    model_url = f"{BASE_RM_API_URL}/db2/run?stationCode={station_code}&stationType={PWS_STATION_TYPE}&selectDate={select_date_str}&resultModelCode={result_model_code}&weather={weather}"    
+    model_data = ewx_request(model_url, base_ewx_api_url)
 
-    url = f"{BASE_RM_API_URL}/db2/run?stationCode={station_code}&stationType={station_type}&selectDate={select_date_str}&resultModelCode={result_model_code}&weather={weather}"    
-    ewx_token = token_value(base_ewx_api_url)
-    headers = {
-        'Accept': "application/json",
-        'Authorization': f"Bearer ${ewx_token}"
-      }
-    payload = {}
-    #
-    r = requests.request("GET", url, headers=headers, data=payload)
-    if r.status_code == 200:
-        request_data = r.json()
-    else:
-        print(f"request error {r.status_code} {r.text} url {url}")
-        request_data = {}
-    return(request_data)
-    
-
-def format_tomcast_model_output(station_code, tomcast_api_output):
-    if isinstance(tomcast_api_output, str):
-        tomcast_api_output = json.loads(tomcast_api_output)
-        
-    if 'data' in tomcast_api_output:
-        tomcast_data = tomcast_api_output['data']
-    else:
+    if model_data:
+        tomcast_df = DataFrame(model_data['Table'])
+        return(tomcast_df)
+    else:        
         return(DataFrame([{}]))
-    
-    # get just the basics for now
-    tomcast_df = DataFrame(tomcast_data['Table'])
-    return(tomcast_df)
-
-        
-######### CLASS STYLE ############
-
-# class EwxModelAPI: 
-    
-
-#     # class constants    
-#     BASE_EWX_API_URL = getenv('ENVIROWEATHER_API_URL', 'https://enviroweather.msu.edu/ewx-api/api')
-#     BASE_RM_API_URL = getenv('ENVIROWEATHER_API_URL', 'https://enviroweather.msu.edu/rm-api/api')
-#     michigan_time_zone = ZoneInfo("America/New_York")
-
-#     _current_token_value = ""
-
-#     @classmethod
-#     def token(cls):
-#         """get current token, request one if needed"""
-#         if not cls._current_token_value:
-#             cls._current_token_value = cls._request_token(cls.BASE_EWX_API_URL)
-            
-#         return(cls._current_token_value)
-        
-#     @classmethod
-#     def refresh_token(cls):
-#         """used to force update the token if necessary"""
-#         cls._current_token_value = cls._request_token()
-        
-#     @classmethod
-#     def _request_token(cls, base_ewx_api_url = BASE_EWX_API_URL)->str:
-#         """request a token from the EWX RM-API for use in subsequent API calls"""
-#         token_url = f"{base_ewx_api_url}/db2/siteToken"
-#         r = requests.get(url = token_url)
-#         if r.status_code == 200:
-#             request_data:dict = r.json()
-#             try:
-#                 token = request_data["data"]["token"]
-#                 return(token)
-#             except KeyError as e:
-#                 pass    
-#         return ""
-    
-    
-#     def __init__(self, station_code:str, base_ewx_api_url:str = "", api_path = '/api/test'):
-        
-#         if not base_ewx_api_url:
-#             base_ewx_api_url = self.BASE_EWX_API_URL 
-        
-#         self.api_path = api_path
-#         self.station_code = station_code
-#         self.base_ewx_api_url = base_ewx_api_url
-#         self.station_type:str = "6"  # magic number for all PWS stations
-#         self.weather:bool = True 
-#         self.last_req_status = None
-#         self.last_req_url = None
-#         self.last_req_store = None
-        
-#         # override 
-#         result_model_code:str = ""
-
-
-#     def ewx_headers(self):
-#         return {
-#             'Accept': "application/json",
-#             'Authorization': f"Bearer ${self.token()}"
-#             }
-    
-#     def model_url(self, *args, **kwargs)->str:  # set as a url type from url lie
-#         """ craft the URL for this model request OVERRIDE"""
-#         tomcast_url = f"{self.base_ewx_api_url}{self.api_path}?stationCode=${self.station_code}&stationType=${self.station_type}"
-        
-                
-#     def make_request(self, request_url)->any:
-#         """"makes requests to API and extracts relevant data from model API override""" 
-#         self.last_req_url = request_url
-#         r = requests.get(headers=self.ewx_headers(), url = request_url)
-#         self.last_req_status = r.status_code
-#         if r.status_code == 200:
-#             request_data = r.json()
-#             self.last_req_store = request_data
-            
-#             return request_data
-        
-#         # handle errors here
-#         return ""
-       
-#     def model_output(self, request_data)->str:
-#         """override - handle request data """
-#         return(request_data)
-        
-        
-# class TomcastAPI(EwxModelAPI):
-#     """subclass of Model API for tomcast model"""
-#     def __init__(self, station_code, base_ewx_api_url= None):        
-#         super.__init__(station_code, base_ewx_api_url)
-#         self.result_model_code = 'tomcast'
-        
-#     def model_url(self, select_date, weather=True):        
-#         return f"{self.base_ewx_api_url}{self.api_path}?stationCode=${self.station_code}&stationType=${self.station_type}&selectDate=${select_date}&resultModelCode=${self.result_model_code}&weather=${weather}" 
-           
-#     def make_request(self,select_date, weather=True):
-#         r = requests.get(headers=self.ewx_headers(), url = self.model_url(select_date, weather))
-#         if r.status_code == 200:
-#             request_data = r.json()
-#             return request_data
-        
-#         # handle error here
-#         return ""
-        
-
-        
-
-    

@@ -1,13 +1,16 @@
 
 # pws_components.py  reuseable components for pages
-from dash import html
+from dash import html, dcc
+import dash_bootstrap_components as dbc
+from datetime import date
+from zoneinfo import ZoneInfo
 from lib.pwsapi import get_station_codes, get_station_data, get_all_stations
 from datetime import date, timedelta
 
 from .pwsapi import get_hourly_readings, yesterday_readings, latest_readings
 import dash_ag_grid as dag
 import pandas as pd
-# from dash_bootstrap_components import Table as dbcTable
+
 
 
 ## Config
@@ -131,7 +134,7 @@ def yesterday_readings_table(station_code):
             view_df = view_df.sort_values(by=['hour'], ascending=False)
             return(view_df)
         
-            #df_table = dbcTable.from_dataframe(df)
+            #df_table = dbc.Table.from_dataframe(df)
             #return(df_table)
     else:
         return("Select a station code")
@@ -169,10 +172,10 @@ def readings_grid_view(weather_df):
     return(grid)
 
 
-import dash_bootstrap_components as dbc
-from dash import dcc
-from datetime import date
-from zoneinfo import ZoneInfo
+
+#### EWX RM API Model Components
+from .ewx_api import tomcast 
+
 
 def tomcast_form():
     today =  datetime.now(tz=ZoneInfo('US/Eastern')).date().strftime("%Y-%m-%d")
@@ -201,27 +204,39 @@ def tomcast_form():
         className="g-2",
         )
     
-    
     return(form)
-    
-    
-from .ewx_api import request_tomcast_api, format_tomcast_model_output
-def run_tomcast_model(station_code:str, select_date:date):
+
+
+def tomcast_model(station_code:str, select_date:date):
     """get simple tomcast model output and format for Dash.  
-    example use tc = request_tomcast_api(station_code='EWXDAVIS01', select_date=date(2024, 8, 1))
-    tc_df = format_tom
 
     Args:
-        station_code (str): _description_
-        select_date (date): _description_
+        station_code (str): valid station code from database
+        select_date (date): date to run model on, as date or string
+    Returns:
+        Dash UI element or string
     """
-    # TODO validate station code
-    # must be a data TODO validate date
-    if isinstance(select_date, str):
-        select_date = date.fromisoformat(select_date)
-        
-    tc = request_tomcast_api(station_code, select_date)
-    tc_df = format_tomcast_model_output(station_code = station_code, tomcast_api_output=tc)
+    # input checking
+    if not station_code or station_code is None:
+        return(dbc.Alert("select a station above", color="error"))
     
-    return(tc_df)
+    if not select_date or not(isinstance(select_date, str)):
+        print(f"got this for select_date: {select_date}")
+        return("invalid date")
+
+    # allow either date object or a date string in iso format
+    if isinstance(select_date,str):
+        select_date = date.fromisoformat(select_date)
+    
+    # run model and format output to data frame
+    tomcast_output = tomcast(station_code, select_date)
+
+    # convert to UI table
+    if isinstance(tomcast_output, pd.DataFrame):
+        # to-do : add style/colors to table
+        return(dbc.Table.from_dataframe(tomcast_output, responsive=True))
+        
+    else: # assume it's not a data frame, must be string with message
+        return(dbc.Alert(tomcast_output))
+        
     
