@@ -70,15 +70,26 @@ def date_to_api_str(d):
     
     assumes the date in the time zone for the station
     
+    Args:
+        d {date |datetime | }
+    
     """
     if d is None:
     # must set timezone explicitly since no guarantee tz of server (or if it's UTC)
         d = datetime.now(tz=MICHIGAN_TIME_ZONE).date()
     elif isinstance(d, datetime):
-        select_date = select_date.date()
+        d = d.date()
+    elif isinstance(d, str):
+        d = date.fromisoformat(d)
+    elif isinstance(d, date):
+        pass
+    else:
+        # not a valid format, raise warning/error
+        return(None)
     
     d_str = d.strftime("%Y-%m-%d")
-    return(d)
+    
+    return(d_str)
 
     
 def ewx_request(url:str,base_ewx_api_url:str = BASE_EWX_API_URL):
