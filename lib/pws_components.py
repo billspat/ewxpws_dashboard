@@ -172,9 +172,9 @@ def readings_grid_view(weather_df):
     return(grid)
 
 
-
+######################################
 #### EWX RM API Model Components
-from .ewx_api import tomcast 
+from .ewx_api import tomcast, weather_model
 
 
 def tomcast_form():
@@ -229,14 +229,72 @@ def tomcast_model(station_code:str, select_date:date):
         select_date = date.fromisoformat(select_date)
     
     # run model and format output to data frame
-    tomcast_output = tomcast(station_code, select_date)
+    model_output = tomcast(station_code, select_date)
 
     # convert to UI table
-    if isinstance(tomcast_output, pd.DataFrame):
+    if isinstance(model_output, pd.DataFrame):
         # to-do : add style/colors to table
-        return(dbc.Table.from_dataframe(tomcast_output, responsive=True))
+        return(dbc.Table.from_dataframe(model_output, responsive=True))
         
     else: # assume it's not a data frame, must be string with message
-        return(dbc.Alert(tomcast_output))
+        return(dbc.Alert(model_output))
+
+
+def weather_summary_form():
+    today =  datetime.now(tz=ZoneInfo('US/Eastern')).date().strftime("%Y-%m-%d")
+    
+    # using bootstrap classes here becuase the default style is large and thin which doesn't match
+    form = dbc.Row(
+        [
+            dbc.Col(
+                dcc.DatePickerSingle(id='weather-summary-date-picker',
+                                     display_format='YYYY-MM-DD',
+                                     first_day_of_week = 1,                                       
+                                     placeholder="Select Date",
+                                     date = today, 
+                                     className="fs-6 fw-semibold"),
+                className="me-3",
+                width = "auto"
+
+                ),
+            dbc.Col(
+                dbc.Button("Run Weather Model", 
+                               id="run-weather_model-button", 
+                               class_name="btn btn-success d-none d-sm-inline-block"), 
+                width="auto"
+                ),
+        ],
+        className="g-2",
+        )
+    
+    return(form)
         
+        
+def weather_model_table(station_code:str, select_date:date=None):
+    """run weather model and format for inclusion in Dash UI
+
+    Args:
+        station_code (str): valid PWS station code from database
+        select_date (date, optional): date to END pulling data.  starts from 
+            01-01 of year of date. Defaults to None, which uses today
+    """
+    model_output = weather_model(station_code, select_date)
+
+    if isinstance(model_output, pd.DataFrame):
+        
+        # for now, select few columns
+        display_df = model_output.loc[:,['date', 'atmp_min', 'atmp_avg','atmp_max', 'dd0_single', 'dd0_accum']]
+        # convert from Pandas back to array of dict
+        model_records = display_df.to_dict("records")
+        grid = dag.AgGrid(
+            id="weather_summary_grid",
+            rowData=model_records,
+            columnDefs=[{"field": i} for i in model_output.columns],
+            dashGridOptions={'pagination':True},
+            )
+        
+        return(grid)
+        
+    else: # assume it's not a data frame, must be string with message
+        return(dbc.Alert(model_output))    
     
