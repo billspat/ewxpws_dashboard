@@ -131,8 +131,29 @@ def tomcast(station_code:str, select_date:Union[datetime,date,None] = None, weat
     model_url = f"{BASE_RM_API_URL}/db2/run?stationCode={station_code}&stationType={PWS_STATION_TYPE}&selectDate={select_date_str}&resultModelCode={result_model_code}&weather={weather}"    
     model_data = ewx_request(model_url, base_ewx_api_url)
 
-    if model_data:
+    if model_data and 'Table' in model_data:
         tomcast_df = DataFrame(model_data['Table'])
         return(tomcast_df)
     else:        
         return(DataFrame([{}]))
+    
+def weather_model(station_code:str, select_date:Union[datetime,date,None] = None, weather:bool = True, base_rm_api_url:str = BASE_RM_API_URL, base_ewx_api_url:str = BASE_EWX_API_URL, ):
+    """get weathersummary api 
+
+    Args:
+        station_code (str): PWS station code valid from database
+        select_date (datetime | date | None, optional): optional date or datetime. Defaults to None.  If none sent, creates current date using timezone sent
+        base_rm_api_url (str, optional): url to use for the rm api (model). Defaults to module constant BASE_RM_API_URL, which is production api
+        base_ewx_api_url (str, optional): api to get a token from, defaults to BASE_EWX_API_URL.
+    """
+     
+    result_model_code:str = "weathersummary"        
+    select_date_str = date_to_api_str(select_date)
+    model_url = f"{BASE_RM_API_URL}/db2/run?stationCode={station_code}&stationType={PWS_STATION_TYPE}&selectDate={select_date_str}&resultModelCode={result_model_code}"
+    model_data = ewx_request(model_url, base_ewx_api_url)
+    if model_data and 'Table' in model_data:
+        weather_df= DataFrame(model_data['Table'])        
+    else:
+        weather_df = DataFrame([{}])    
+    return(weather_df)
+
