@@ -259,7 +259,7 @@ def weather_summary_form():
                 ),
             dbc.Col(
                 dbc.Button("Run Weather Model", 
-                               id="run-weather_model-button", 
+                               id="run-weather-summary-button", 
                                class_name="btn btn-success d-none d-sm-inline-block"), 
                 width="auto"
                 ),
@@ -270,7 +270,7 @@ def weather_summary_form():
     return(form)
         
         
-def weather_model_table(station_code:str, select_date:date=None):
+def weather_summary_table(station_code:str, select_date:date=None):
     """run weather model and format for inclusion in Dash UI
 
     Args:
@@ -282,15 +282,19 @@ def weather_model_table(station_code:str, select_date:date=None):
 
     if isinstance(model_output, pd.DataFrame):
         
-        # for now, select few columns
-        display_df = model_output.loc[:,['date', 'atmp_min', 'atmp_avg','atmp_max', 'dd0_single', 'dd0_accum']]
-        # convert from Pandas back to array of dict
-        model_records = display_df.to_dict("records")
+        # for now, select few columns, and sort by date descending
+        columns = ['date', 'atmp_min', 'atmp_avg','atmp_max', 'dd0_single', 'dd0_accum']
+        column_defs = [{"field": c} if c != 'date' else {"field": c, "sort": "desc"} for c in columns]
+
+        model_output_filtered= model_output.loc[:,columns]
+        
         grid = dag.AgGrid(
             id="weather_summary_grid",
-            rowData=model_records,
-            columnDefs=[{"field": i} for i in model_output.columns],
-            dashGridOptions={'pagination':True},
+            rowData=model_output_filtered.to_dict("records"),
+            columnDefs=column_defs,
+            dashGridOptions={'pagination':True,
+                             'sortingOrder': ['desc', 'asc', None]},
+            columnSize="sizeToFit",
             )
         
         return(grid)
