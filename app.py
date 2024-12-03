@@ -151,6 +151,19 @@ def display_marker_click(*args):
         # return(station_code, {"function": f"params.data.station_code == '{station_code}'"})   
 
 ##### WEATHER SUMMARY
+
+
+### clear the weather summary table when new station is selected
+@app.callback(
+    Output('weather-summary-table', 'children',allow_duplicate=True),
+    Input("station_table", "selectedRows"),
+    prevent_initial_call=True,
+)
+def clear_weather_summary_table(row):
+    # TODO - check if the row selected is actually different first!
+    return("")
+
+
 @app.callback(
     Output('weather-summary-table', 'children', allow_duplicate=True),
     Input('run-weather-summary-button','n_clicks'),
