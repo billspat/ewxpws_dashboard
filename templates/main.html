@@ -403,25 +403,28 @@
                     <div class="card-body">
                       <div class="tab-content">
 
-                        <!-- table -->
+                        <!-- HOURLY TABLE -->
                         <div class="tab-pane active show" id="tabs-weather-4" role="tabpanel">                          
                           <div  id = "daily_readings_table" class="table m-0 p-0"></div>                       
                         </div>
 
-                        <!-- graph -->
-                        <div class="tab-pane" id="tabs-graph-4" role="tabpanel">                          
-                          <div  id = "readings_graph" class="m-0 p-0">[graph here]</div>                       
+                        <!-- WEATHER SUMMARY -->
+                        <div class="tab-pane" id="tabs-graph-4" role="tabpanel"> 
+                          <div id="weather_summary_form" class="p-1">
+                            {{ weather_summary_form | plotly}}
+                          </div>                         
+                          <div  id = "weather-summary-table" class="mt-3 p-1">                            
+                          </div>                       
                         </div>
 
                         <!-- TOMCAST -->
                         <div class="tab-pane" id="tabs-tomcast-4" role="tabpanel">
-                          <div id="tomcast_form">
+                          <div id="tomcast_form" class="p-1">
                             {{ tomcast_form | plotly}}
                           </div>
-                          <div>
-                          </div>
                           
-                          <div id="tomcast-results"></div>
+                          <div id="tomcast-results" class="mt-3 p-1">                            
+                          </div>
                         </div>
 
                       </div>

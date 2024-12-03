@@ -12,6 +12,7 @@ from dash_bootstrap_components import Table as dbcTable
 from dash_template_rendering import TemplateRenderer, render_dash_template_string
 
 
+import lib.pws_components as pwsc
 from lib.pws_components import pws_title, station_table, station_table_narrow, yesterday_readings_table, tomcast_model, tomcast_form, latest_readings_values
 from lib.pwsapi import get_all_stations
 from lib.pws_map import station_map, station_marker_id, station_from_marker_id
@@ -48,9 +49,10 @@ def get_template(template_file, template_dir:str = TEMPLATES_DIR)->str:
   
     
 app.layout =  render_dash_template_string(get_template(template_file = "main.html"),
-    station_table = station_table_narrow(station_records()),
+    station_table = pwsc.station_table_narrow(station_records()),
     station_map = station_map(station_records()),
-    tomcast_form = tomcast_form()
+    tomcast_form = pwsc.tomcast_form(), 
+    weather_summary_form = pwsc.weather_summary_form()    
   )
  
 
@@ -148,6 +150,26 @@ def display_marker_click(*args):
         return({"function": f"params.data.station_code == '{station_code}'"})            
         # return(station_code, {"function": f"params.data.station_code == '{station_code}'"})   
 
+##### WEATHER SUMMARY
+@app.callback(
+    Output('weather-summary-table', 'children', allow_duplicate=True),
+    Input('run-weather-summary-button','n_clicks'),
+    State("text_station_table_selection", "children"),
+    State("weather-summary-date-picker", "date"),
+    prevent_initial_call=True,
+    )
+def weather_summary(n_clicks, station_code, select_date):
+    # input checking 
+    if not station_code:
+        return(dbc.Alert("select a station above", color="error"))
+    
+    if not select_date or not(isinstance(select_date, str)):
+        return(dbc.Alert("select a date and click 'run tomcast'"))
+    
+    # run model and format output
+    weather_summary_grid = pwsc.weather_summary_table(station_code, select_date)
+    return(weather_summary_grid)
+
 
 
 ##### TOMCAST 
@@ -169,7 +191,8 @@ def tomcast(n_clicks, station_code, select_date):
     # run model and format output
     return(tomcast_model(station_code, select_date))
     
-                  
+  
+                
 if __name__ == "__main__":
     # debug = None required to respect DASH_DEBUG environment var (True /False)
     app.run(debug=None)
