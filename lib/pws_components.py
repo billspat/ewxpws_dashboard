@@ -11,7 +11,7 @@ from .pwsapi import get_hourly_readings,latest_readings
 import dash_ag_grid as dag
 import pandas as pd
 
-from .converters import hour_number2clock_str, degree2compass, kph2mph, c2f, mm2inch, today_localtime_str, first_of_year_string
+from .converters import hour_number2clock_str, degree2compass, kph2mph, c2f, mm2inch, today_localtime_str, first_of_year_string, days_ago
 
 
 
@@ -229,14 +229,16 @@ def hourly_readings_grid_view(weather_df):
     return(grid)
 
 
-def pws_date_picker(id = ""):
-    today_localtime_str, first_of_year_string
+def pws_date_picker(id:str = "", initial_date_str:str = None):
+    
+    if initial_date_str is None or not(initial_date_str):
+        initial_date_str = today_localtime_str()
     
     dps = dcc.DatePickerSingle(id=id,
                 display_format='YYYY-MM-DD',
                 first_day_of_week = 1,                                       
                 placeholder="Select Date",
-                date = today_localtime_str(), 
+                date = initial_date_str, 
                 className="fs-6 fw-semibold me-3",
                 min_date_allowed=first_of_year_string(),
                 max_date_allowed=today_localtime_str(),
@@ -263,21 +265,32 @@ from .ewx_api import tomcast, weather_model
 
 
 def tomcast_form():
-    today =  datetime.now(tz=ZoneInfo('US/Eastern')).date().strftime("%Y-%m-%d")
-    
+
+    seven_days_ago_str =  days_ago(d=7).strftime("%Y-%m-%d")
     # using bootstrap classes here becuase the default style is large and thin which doesn't match
     form = dbc.Row(
-        [dbc.Col(pws_date_picker(id='tomcast-date-picker'),
-                className="me-3",
+        [
+            dbc.Col(pws_date_picker(id='tomcast-date-picker'),
                 width = "auto"
-
+                ),
+            dbc.Col([
+                html.Div("Date of last spray or date to start accumulating DSV:", 
+                        className="col-auto me-3 d-none d-sm-inline-block"),
+                pws_date_picker(id='tomcast-spray-date-picker', initial_date_str= seven_days_ago_str )
+                ],
+                className="me-3",
+                width = "auto"             
                 ),
             dbc.Col(
-                dbc.Button("Run Tomcast for Select Date", 
-                               id="run-tomcast-button", 
-                               class_name="btn btn-success d-none d-sm-inline-block"), 
+                dbc.Button("Run Tomcast", 
+                            id="run-tomcast-button", 
+                            class_name="btn btn-success d-none d-sm-inline-block"
+                            ), 
+                
                 width="auto"
                 ),
+            html.Div("", id="tomcast_loading_message")
+        
         ],
         className="g-2",
         )
@@ -285,7 +298,9 @@ def tomcast_form():
     return(form)
 
 
-def tomcast_model(station_code:str, select_date:date):
+def tomcast_model(station_code:str, 
+                  select_date:date, 
+                  date_start_accumulation:date=None):
     """get simple tomcast model output and format for Dash.  
 
     Args:
@@ -307,7 +322,8 @@ def tomcast_model(station_code:str, select_date:date):
         select_date = date.fromisoformat(select_date)
     
     # run model and format output to data frame
-    tomcast_output = tomcast(station_code, select_date)
+    tomcast_output = tomcast(station_code, select_date, 
+                             date_start_accumulation=date_start_accumulation)
     
     if not isinstance(tomcast_output, pd.DataFrame):
         return(tomcast_output)
@@ -315,12 +331,20 @@ def tomcast_model(station_code:str, select_date:date):
     # to-do : add style/colors to table
     tomcast_column_defs = [
         { 'headerName': 'Date', 'field': 'Date', },
-        { 'headerName': 'DSV', 'field': 'DSV' },
-        { 'headerName': 'SumDSV', 'field': 'SumDSV' },
+        { 'headerName': 'Disease Severity Units (DSV)', 'field': 'DSV' },
+        { 'headerName': 'Accumulated  Disease Severity Units (DSV)', 'field': 'SumDSV' },
         { 'headerName': 'Risk', 'field': 'Risk' },
         { 'headerName': 'Day Number', 'field': 'TomcastDay' },
         { 'headerName': 'highlight', 'field': 'highlight', 'hide':'true' },
     ]
+    
+    
+    # assign bootstrap colors based on risk
+    tomcastRowClassRules = {
+        "bg-warning-subtle": "params.data.Risk == 'low'",
+        "bg-warning": "params.data.Risk == 'moderate'",
+        "bg-danger fw-bold" : "params.data.Risk == 'high'",
+        }   
     
     tomcast_table = dag.AgGrid(
         id="tomcast_table",
@@ -333,6 +357,7 @@ def tomcast_model(station_code:str, select_date:date):
                     "autoHeaderHeight": True,                    
                     },
         columnSize="sizeToFit",
+        rowClassRules = tomcastRowClassRules,
         )
         
     return(tomcast_table)

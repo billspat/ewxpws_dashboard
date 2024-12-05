@@ -6,7 +6,7 @@ None of these are rounded  - setting the precision is the job
 of the calling program 
 """
 
-from datetime import time, datetime, date
+from datetime import time, datetime, date, timedelta
 from zoneinfo import ZoneInfo
 
 MICHIGAN_TIME_ZONE_KEY = 'US/Eastern'
@@ -23,6 +23,13 @@ def today_localtime_str(timezone_key = MICHIGAN_TIME_ZONE_KEY):
     stations' timezone as a string YYYY-MM-DD
     """
     return today_localtime(timezone_key).strftime("%Y-%m-%d")
+
+def days_ago(d:int, timezone_key = MICHIGAN_TIME_ZONE_KEY):
+    """ using local timezone, give date some days ago"""
+
+    return (datetime.now(tz=ZoneInfo(timezone_key)) - timedelta(days = d)).date()
+
+
 
 def first_of_year_string():
     """get the current year and Jan 1st to limit dates to this year"""

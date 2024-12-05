@@ -199,7 +199,7 @@ def weather_summary(n_clicks, station_code, select_date):
         return(dbc.Alert("select a station above", color="error"))
     
     if not select_date or not(isinstance(select_date, str)):
-        return(dbc.Alert("select a date and click 'run tomcast'"))
+        return(dbc.Alert("select a date and click 'run'"))
     
     # run model and format output
     weather_summary_grid = pwsc.weather_summary_table(station_code, select_date)
@@ -213,18 +213,19 @@ def weather_summary(n_clicks, station_code, select_date):
     Input('run-tomcast-button','n_clicks'),
     State("text_station_table_selection", "children"),
     State("tomcast-date-picker", "date"),
+    State("tomcast-spray-date-picker", "date"),
     prevent_initial_call=True,
     )
-def tomcast(n_clicks, station_code, select_date):
+def tomcast(n_clicks, station_code, select_date,date_start_accumulation):
     # input checking 
     if not station_code:
         return(dbc.Alert("select a station above", color="error"))
     
     if not select_date or not(isinstance(select_date, str)):
-        return(dbc.Alert("select a date and click 'run tomcast'"))
+        return(dbc.Alert("select a date, optional spray date, and click 'run tomcast'"))
     
     # run model and format output
-    return(tomcast_model(station_code, select_date))
+    return(tomcast_model(station_code, select_date,date_start_accumulation))
     
   
                 

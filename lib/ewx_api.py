@@ -12,6 +12,7 @@ load_dotenv()
 from os import getenv
 from pandas import DataFrame
 from typing import Union
+from .converters import MICHIGAN_TIME_ZONE
 
 
 ####### MODULE STYLE ##############
@@ -20,8 +21,7 @@ from typing import Union
 BASE_EWX_API_URL=getenv('BASE_EWX_API_URL', 'https://enviroweather.msu.edu/ewx-api/api')
 BASE_RM_API_URL=getenv('BASE_RM_API_URL', 'https://enviroweather.msu.edu/rm-api/api')
 PWS_STATION_TYPE = 6
-MICHIGAN_TIME_ZONE_KEY = 'US/Eastern'
-MICHIGAN_TIME_ZONE = ZoneInfo(MICHIGAN_TIME_ZONE_KEY)
+
 
 global current_token_value
 current_token_value = None
@@ -121,7 +121,10 @@ def ewx_request(url:str,base_ewx_api_url:str = BASE_EWX_API_URL):
     return None
 
 
-def tomcast(station_code:str, select_date:Union[datetime,date,None] = None, weather:bool = True, base_rm_api_url:str = BASE_RM_API_URL, base_ewx_api_url:str = BASE_EWX_API_URL, ):
+def tomcast(station_code:str, 
+            select_date:Union[datetime,date,None] = None, 
+            date_start_accumulation = None,
+            weather:bool = True, base_rm_api_url:str = BASE_RM_API_URL, base_ewx_api_url:str = BASE_EWX_API_URL, ):
     """generate model URL for the TOMCAST model.   Date optional (will use today's date if none given)
     
     Args:
@@ -138,8 +141,16 @@ def tomcast(station_code:str, select_date:Union[datetime,date,None] = None, weat
     result_model_code:str = "tomcast"        
     select_date_str = date_to_api_str(select_date)
     
+    # the date to api str function returns todays date if empty, so override that here
+    # it's ok to have a blank date_start_accumulation as the model will estimate one
+    if not(date_start_accumulation):
+        date_start_accumulation_str = ""
+    else:
+        date_start_accumulation_str = date_to_api_str(date_start_accumulation)
+        
+        
     #example https://enviroweather.msu.edu/rm-api/api/db2/run?stationCode=EWXDAVIS01&stationType=6&selectDate=2024-08-01&resultModelCode=tomcast"
-    model_url = f"{BASE_RM_API_URL}/db2/run?stationCode={station_code}&stationType={PWS_STATION_TYPE}&selectDate={select_date_str}&resultModelCode={result_model_code}&weather={weather}"    
+    model_url = f"{BASE_RM_API_URL}/db2/run?stationCode={station_code}&stationType={PWS_STATION_TYPE}&selectDate={select_date_str}&resultModelCode={result_model_code}&weather={weather}&dateStartAccumulation={date_start_accumulation_str}"    
     model_data = ewx_request(model_url, base_ewx_api_url)
 
     if model_data and 'Table' in model_data:
