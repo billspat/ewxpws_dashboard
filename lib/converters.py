@@ -83,6 +83,6 @@ def hour_number2clock_str(h:int)->str:
     
     start_time = time((h-1),0)
     end_time = time(start_time.hour, 59)
-    time_interval_str = start_time.strftime("%-I:%M") + "-" + end_time.strftime("%-I:%M %p")
+    time_interval_str = start_time.strftime("%I:%M") + "-" + end_time.strftime("%I:%M %p")
     
     return(time_interval_str)    
