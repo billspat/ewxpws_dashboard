@@ -13,7 +13,7 @@ from dash_template_rendering import TemplateRenderer, render_dash_template_strin
 
 
 import lib.pws_components as pwsc
-from lib.pws_components import pws_title, station_table, station_table_narrow, yesterday_readings_table, tomcast_model, tomcast_form, latest_readings_values
+from lib.pws_components import * 
 from lib.pwsapi import get_all_stations
 from lib.pws_map import station_map, station_marker_id, station_from_marker_id
 from lib.converters import degree2compass, kph2mph, c2f, mm2inch
@@ -51,6 +51,7 @@ def get_template(template_file, template_dir:str = TEMPLATES_DIR)->str:
 app.layout =  render_dash_template_string(get_template(template_file = "main.html"),
     station_table = pwsc.station_table_narrow(station_records()),
     station_map = station_map(station_records()),
+    hourly_weather_form = hourly_weather_form(),
     tomcast_form = pwsc.tomcast_form(), 
     weather_summary_form = pwsc.weather_summary_form()    
   )
@@ -58,13 +59,20 @@ app.layout =  render_dash_template_string(get_template(template_file = "main.htm
 
 #### REACTIVITY 
 
-from lib.pws_components import readings_grid_view
-### table row click, delivers a station code for later use
+### table row click, delivers a station code for later 
+
+
+#### TODO! 
+
+### remove the hourly_readings_table output from here, and only 
+# output the station_code in the text_station_table_selection 
+# THEN use the callback below that updates the hourly table when the date is 
+# selected, to update when either date is selected or the 
 @app.callback(
     [Output("text_station_table_selection", "children"),
     Output("text_station_table_selection", "href"),
     Output("station_type_cell", "children"),
-    Output("daily_readings_table", "children"),
+    Output("hourly_readings_table", "children", allow_duplicate=True),
     Output('tomcast-results', 'children',allow_duplicate=True)],
     Input("station_table", "selectedRows"),
     prevent_initial_call=True,
@@ -78,13 +86,7 @@ def station_table_row_data(row)->tuple[str,str,str,str]:
     if isinstance(row, dict) and 'station_code' in row:
         station_code = row['station_code']
         station_type = row['type']
-    
-        # try:
-        readings_df = yesterday_readings_table(station_code)
-        if(readings_df is None or (type(readings_df) != type(pd.DataFrame([{}]))) or readings_df.empty):
-            readings_table = html.Div("no recent data", className="fw-bold")
-        else:
-            readings_table =  dbcTable.from_dataframe(readings_df, responsive=True)
+        readings_table  = hourly_readings_table(station_code)
             
     else:
         station_code = ""
@@ -149,6 +151,22 @@ def display_marker_click(*args):
         # station_record = station_records[station_code]
         return({"function": f"params.data.station_code == '{station_code}'"})            
         # return(station_code, {"function": f"params.data.station_code == '{station_code}'"})   
+
+
+
+# ##### Hourly Weather
+# @app.callback(
+#     Output("hourly_readings_table", "children", allow_duplicate=True),
+#     Input("hourly-weather-date-picker", "value"),
+#     State("text_station_table_selection", "children"),
+#     prevent_initial_call=True,
+# )
+# def redraw_hourly_weather_table(hourly_weather_date_str, station_code):
+#     for_date = date.fromisoformat(hourly_weather_date_str)
+#     readings_table  = hourly_readings_table(station_code, for_date = for_date)
+#     return(readings_table)
+# # hourly-weather-date-picker
+
 
 ##### WEATHER SUMMARY
 

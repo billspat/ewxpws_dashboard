@@ -387,7 +387,7 @@
                         
                         <li class="nav-item dropdown">
                           <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Crop Models</a>
-                          <div class="dropdown-menu" style="">
+                          <div class="dropdown-menu" >
                             <a class="dropdown-item" href="#">
                               model 1
                             </a>
@@ -404,8 +404,11 @@
                       <div class="tab-content">
 
                         <!-- HOURLY TABLE -->
-                        <div class="tab-pane active show" id="tabs-weather-4" role="tabpanel">                          
-                          <div  id = "daily_readings_table" class="table m-0 p-0"></div>                       
+                        <div class="tab-pane active show" id="tabs-weather-4" role="tabpanel"> 
+                          <div class="p-1">
+                            {{ hourly_weather_form | plotly}}
+                          </div>                           
+                          <div  id = "hourly_readings_table" class="table m-0 p-0"></div>                       
                         </div>
 
                         <!-- WEATHER SUMMARY -->
