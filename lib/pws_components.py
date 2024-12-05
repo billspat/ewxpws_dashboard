@@ -169,7 +169,7 @@ def hourly_readings_table(station_code, for_date = None):
     
     weather_column_defs = [
         { 'headerName': 'hour', 'field': 'hour', 'hide':'true'},
-        { 'headerName': 'Time', 'field': 'time' },
+        { 'headerName': 'Time', 'field': 'time',  'sortable': False  },
         { 'headerName': 'Air Temp (F)', 'field': 'atmp' },
         { 'headerName': 'Rel Humidity', 'field': 'relh' },
         { 'headerName': 'Precip (inch)', 'field': 'pcpn' },
@@ -307,15 +307,35 @@ def tomcast_model(station_code:str, select_date:date):
         select_date = date.fromisoformat(select_date)
     
     # run model and format output to data frame
-    model_output = tomcast(station_code, select_date)
-
-    # convert to UI table
-    if isinstance(model_output, pd.DataFrame):
-        # to-do : add style/colors to table
-        return(dbc.Table.from_dataframe(model_output, responsive=True))
+    tomcast_output = tomcast(station_code, select_date)
+    
+    if not isinstance(tomcast_output, pd.DataFrame):
+        return(tomcast_output)
+    
+    # to-do : add style/colors to table
+    tomcast_column_defs = [
+        { 'headerName': 'Date', 'field': 'Date', },
+        { 'headerName': 'DSV', 'field': 'DSV' },
+        { 'headerName': 'SumDSV', 'field': 'SumDSV' },
+        { 'headerName': 'Risk', 'field': 'Risk' },
+        { 'headerName': 'Day Number', 'field': 'TomcastDay' },
+        { 'headerName': 'highlight', 'field': 'highlight', 'hide':'true' },
+    ]
+    
+    tomcast_table = dag.AgGrid(
+        id="tomcast_table",
+        rowData = tomcast_output.to_dict('records'),
+        columnDefs = tomcast_column_defs,
+        defaultColDef={"resizable": True, 
+                    "sortable": False, 
+                    "filter": False,
+                    "wrapHeaderText": True,
+                    "autoHeaderHeight": True,                    
+                    },
+        columnSize="sizeToFit",
+        )
         
-    else: # assume it's not a data frame, must be string with message
-        return(dbc.Alert(model_output))
+    return(tomcast_table)
 
 
 def weather_summary_form():
