@@ -2,7 +2,7 @@ import requests
 from warnings import warn
 from . import BASE_PWS_API_URL
 from datetime import date, timedelta
-
+import pandas as pd
             
 def get_station_codes(api_url:str = BASE_PWS_API_URL):
     r = requests.get(url = f"{api_url}/stations/")
@@ -69,10 +69,13 @@ def get_hourly_readings(station_code=None, start_date=None, end_date=None, api_u
     """_summary_
 
     Args:
-        station_code (_type_, optional): _description_. Defaults to None.
-        start_date (_type_, optional): _description_. Defaults to None.
-        end_date (_type_, optional): _description_. Defaults to None.
-        api_url (_type_, optional): _description_. Defaults to BASE_PWS_API_URL.
+        station_code (_type_, optional): station code from weatherstation table in db. Defaults to None.
+        start_date (_type_, optional): date to start. 
+            Defaults to None, which means today, unles there is an end date, 
+            which will be set to the end date
+        end_date (_type_, optional): date to end on, could be same as start. 
+            Defaults to None, meaning same as start_date
+        api_url (_type_, optional): PWS API url. Defaults to BASE_PWS_API_URL.
     """
     
     EMPTY_DATA = [{}]
@@ -80,9 +83,17 @@ def get_hourly_readings(station_code=None, start_date=None, end_date=None, api_u
     if(not station_code):
         return(EMPTY_DATA)
     
-    if(not start_date or not end_date): 
-        start_date = str(date.today())
-        end_date = str(date.today())
+    # default handling of dates for maximum flexibilty
+    if(not start_date):
+        if(not end_date): 
+            start_date = str(date.today())
+            end_date = str(date.today())
+        else:
+            start_date = end_date
+    else:
+        if(not end_date):
+            end_date = start_date
+            
 
     # check if start and end great than today
     url = f"{api_url}/weather/{station_code}/hourly?start={start_date}&end={end_date}"
@@ -93,26 +104,24 @@ def get_hourly_readings(station_code=None, start_date=None, end_date=None, api_u
         return(EMPTY_DATA)
  
 
-import pandas as pd
 
-def yesterday_readings(station_code=None):
-    """get a data frame of weather.  When using this in the dash page, use 
-    the dash bootstrap component library convenience function
-    df = yesterday_readings_table('MYSTATION')
-    if df:
-        html = dbc.Table.from_dataframe(yesterday_readings_table('MYSTATION'))
-    else:
-        html = "no readings"
+
+# NOTE This may not be needed, was created in early days to handle bad data 
+# from dash callbacks
+def hourly_readings(station_code=None, for_date = None):
+    """invoke get_hourly_readings for one day, to get a data frame of weather 
     
     Args:
-        station_code (_type_, optional): _description_. Defaults to None.    
+        station_code (str, optional): valid station code from db. Defaults to None, which returns empthy data
+                     None is used here because Dash sometimes returns empty values or no Value
+        for_date (str, optional): date to pull, if 
         
     Returns:
         always returns a data frame with weather data or empty   
     """
     
     if station_code:
-        readings = get_hourly_readings(station_code)
+        readings = get_hourly_readings(station_code, start_date = for_date)
         if readings:
             readings_df = pd.DataFrame(readings)
             if not readings_df.empty:
@@ -121,8 +130,42 @@ def yesterday_readings(station_code=None):
     empty_df = pd.DataFrame([{}])   
     return(empty_df)
     
+def yesterday_readings(station_code=None):
+    """ get a data frame of weather.  When using this in the dash page, use 
+    the dash bootstrap component library convenience function
+    df = hourly_readings_table('MYSTATION')
+    if df:
+        html = dbc.Table.from_dataframe(hourly_readings_table('MYSTATION'))
+    else:
+        html = "no readings"
+    
+    """
+    
+    if station_code:
+        readings = get_hourly_readings(station_code)
+        if readings:
+            readings_df = pd.DataFrame(readings)
+
+            return(readings_df)
+        else:
+            return(None)
+    else:
+        return(None)
+
 
 def latest_readings(station_code=None, api_url = BASE_PWS_API_URL):
+    """  in 'latest' api endpoing, which gets the rows in readings table that 
+    is the most recent for display.  
+    It's up to displaying component how to determine if these 
+    are actually 'recent
+    
+    Args:
+        station_code (str, optional): valid station code from db. Defaults to 
+            None, which returns empty data
+             None is used here because Dash sometimes returns empty values or no Value
+        api_url (str, optional): base url of the PWS API.  defaults to constant 
+            set at top of this module
+    """
     EMPTY_DATA = [{}]
     
     if(not station_code):
@@ -135,10 +178,7 @@ def latest_readings(station_code=None, api_url = BASE_PWS_API_URL):
     else:
         return(EMPTY_DATA)
     
-         
-def get_station_temperature():
-    # invoke station readings, and filter out just atmp
-    return None
+
         
 
 
