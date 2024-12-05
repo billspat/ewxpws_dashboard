@@ -6,13 +6,39 @@ None of these are rounded  - setting the precision is the job
 of the calling program 
 """
 
-from datetime import time
+from datetime import time, datetime, date
+from zoneinfo import ZoneInfo
 
+MICHIGAN_TIME_ZONE_KEY = 'US/Eastern'
+MICHIGAN_TIME_ZONE = ZoneInfo(MICHIGAN_TIME_ZONE_KEY)
+
+    
+def today_localtime(timezone_key = MICHIGAN_TIME_ZONE_KEY  ):
+    """server TZ is UTC, so get the date of the day in stations' timezone
+    """
+    return datetime.now(tz=ZoneInfo(timezone_key)).date()
+    
+def today_localtime_str(timezone_key = MICHIGAN_TIME_ZONE_KEY):
+    """server TZ is UTC, so get the date of the day in 
+    stations' timezone as a string YYYY-MM-DD
+    """
+    return today_localtime(timezone_key).strftime("%Y-%m-%d")
+
+def first_of_year_string():
+    """get the current year and Jan 1st to limit dates to this year"""
+    this_year = today_localtime().year
+    return date(this_year, 1,1).strftime("%Y-%m-%d")
+
+    
 def c2f(c:float)->float:
+    """ centigrate to fahrenheit
+    """
     f = c*(9/5) + 32
     return(f)
 
 def mm2inch(mm:float)->float:
+    """ millimieters to inches
+    """
     inches = mm / 25.641
     return(inches)
 
