@@ -11,7 +11,7 @@ from .pwsapi import get_hourly_readings,latest_readings
 import dash_ag_grid as dag
 import pandas as pd
 
-from .converters import hour_number2clock_str, degree2compass, kph2mph, c2f, mm2inch
+from .converters import hour_number2clock_str, degree2compass, kph2mph, c2f, mm2inch, today_localtime_str, first_of_year_string
 
 
 
@@ -229,27 +229,32 @@ def hourly_readings_grid_view(weather_df):
     return(grid)
 
 
+def pws_date_picker(id = ""):
+    today_localtime_str, first_of_year_string
+    
+    dps = dcc.DatePickerSingle(id=id,
+                display_format='YYYY-MM-DD',
+                first_day_of_week = 1,                                       
+                placeholder="Select Date",
+                date = today_localtime_str(), 
+                className="fs-6 fw-semibold me-3",
+                min_date_allowed=first_of_year_string(),
+                max_date_allowed=today_localtime_str(),
+                )
+    
+    return(dps)
+
 def hourly_weather_form():
     today =  datetime.now(tz=ZoneInfo('US/Eastern')).date().strftime("%Y-%m-%d")
     
     # using bootstrap classes here becuase the default style is large and thin which doesn't match
     form = dbc.Row(
-        [
-            dbc.Col(
-                dcc.DatePickerSingle(id='hourly-weather-date-picker',
-                                     display_format='YYYY-MM-DD',
-                                     first_day_of_week = 1,                                       
-                                     placeholder="Select Date",
-                                     date = today, 
-                                     className="fs-6 fw-semibold"),
-                className="me-3",
-                width = "auto"
-
-                ),
-        ],
-        className="g-2",
+        [dbc.Col(pws_date_picker(id='hourly-weather-date-picker'),
+                width = "auto",
+                className="g-2",
+                )]
         )
-    
+        
     return(form)
 
 ######################################
@@ -262,14 +267,7 @@ def tomcast_form():
     
     # using bootstrap classes here becuase the default style is large and thin which doesn't match
     form = dbc.Row(
-        [
-            dbc.Col(
-                dcc.DatePickerSingle(id='tomcast-date-picker',
-                                     display_format='YYYY-MM-DD',
-                                     first_day_of_week = 1,                                       
-                                     placeholder="Select Date",
-                                     date = today, 
-                                     className="fs-6 fw-semibold"),
+        [dbc.Col(pws_date_picker(id='tomcast-date-picker'),
                 className="me-3",
                 width = "auto"
 
@@ -327,20 +325,14 @@ def weather_summary_form():
     form = dbc.Row(
         [
             dbc.Col(
-                dcc.DatePickerSingle(id='weather-summary-date-picker',
-                                     display_format='YYYY-MM-DD',
-                                     first_day_of_week = 1,                                       
-                                     placeholder="Select Date",
-                                     date = today, 
-                                     className="fs-6 fw-semibold"),
+                pws_date_picker(id='weather-summary-date-picker'),
                 className="me-3",
                 width = "auto"
-
                 ),
             dbc.Col(
                 dbc.Button("Run Weather Model", 
-                               id="run-weather-summary-button", 
-                               class_name="btn btn-success d-none d-sm-inline-block"), 
+                            id="run-weather-summary-button", 
+                            class_name="btn btn-success d-none d-sm-inline-block"), 
                 width="auto"
                 ),
         ],
