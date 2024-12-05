@@ -2,14 +2,16 @@
 # pws_components.py  reuseable components for pages
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-from datetime import date
+from datetime import date, time
 from zoneinfo import ZoneInfo
 from lib.pwsapi import get_station_codes, get_station_data, get_all_stations
 from datetime import date, timedelta
 
-from .pwsapi import get_hourly_readings, yesterday_readings, latest_readings
+from .pwsapi import get_hourly_readings,latest_readings
 import dash_ag_grid as dag
 import pandas as pd
+
+from .converters import hour_number2clock_str, degree2compass, kph2mph, c2f, mm2inch
 
 
 
@@ -22,6 +24,7 @@ DAYS_MISSING_THRESHOLDS = [1,4]
 pws_title = html.H2(["MSU Enviroweather ", html.B(" Personal Weather Station Dashboard"),])
 
 YESTERDAY = date.today() - timedelta(days = 1)
+
 
 
 def station_table(station_records):
@@ -114,23 +117,38 @@ def latest_readings_values(station_code, threshold_data_note_recent_enough_hours
         return {}
 
 
-def yesterday_readings_table(station_code):
+def hourly_readings_dataframe(station_code, for_date = None):
+    """wrangle data from hourly summary from pws api into dataframe for
+    presentation in American units
+
+    Args:
+        station_code (_type_): _description_
+        for_date (_type_, optional): _description_. Defaults to None.
+    """
+    
     if station_code:
         # get a data frame of readings or empty df
-        weather_df = yesterday_readings(station_code)
+        hourly_weather_json = get_hourly_readings(station_code=station_code, start_date = for_date) 
+        if not hourly_weather_json:
+            return("No Data")        
+        
+        weather_df = pd.DataFrame(hourly_weather_json)
         if(weather_df is None or (type(weather_df) != type(pd.DataFrame([{}]))) or weather_df.empty):
             return("No Data")        
         else:
             view_df = pd.DataFrame().assign(
-                date = weather_df['represented_date'],
-                hour = weather_df.represented_hour, 
-                atmp = weather_df.atmp_avg_hourly,
-                relh = weather_df.relh_avg_hourly,
-                pcpn = round(weather_df.pcpn_total_hourly,3),
+                # date = weather_df['represented_date'],
+                hour     = weather_df.represented_hour,
+                time     = weather_df.represented_hour.map(hour_number2clock_str), 
+                atmp     = round(c2f(weather_df.atmp_avg_hourly),1),
+                relh     = round(weather_df.relh_avg_hourly,0),
+                pcpn     = round(mm2inch(weather_df.pcpn_total_hourly),2),
                 lws_pwet = weather_df.lws_pwet_hourly,
-                wspd = weather_df.wspd_avg_hourly,
-                wspd_max = weather_df.wspd_max_hourly
+                wspd     = round(kph2mph(weather_df.wspd_avg_hourly),1),
+                wspd_max = weather_df.wspd_max_hourly,
+                wdir_avg = weather_df.wdir_avg_hourly.map(degree2compass)
             )
+            
             view_df = view_df.sort_values(by=['hour'], ascending=False)
             return(view_df)
         
@@ -140,13 +158,52 @@ def yesterday_readings_table(station_code):
         return("Select a station code")
     
 
-from datetime import time
+
+def hourly_readings_table(station_code, for_date = None):
+
+    readings_df = hourly_readings_dataframe(station_code, for_date)
+    
+    if(readings_df is None or (type(readings_df) != type(pd.DataFrame([{}]))) or readings_df.empty):
+        return(html.Div("no recent data", className="fw-bold"))
+    
+    
+    weather_column_defs = [
+        { 'headerName': 'hour', 'field': 'hour', 'hide':'true'},
+        { 'headerName': 'Time', 'field': 'time' },
+        { 'headerName': 'Air Temp (F)', 'field': 'atmp' },
+        { 'headerName': 'Rel Humidity', 'field': 'relh' },
+        { 'headerName': 'Precip (inch)', 'field': 'pcpn' },
+        { 'headerName': 'Leaf Percent Wet', 'field': 'lws_pwet' },
+        { 'headerName': 'Windspeed Avg (mph)', 'field': 'wspd' },
+        { 'headerName': 'Windspeed Max (mph)', 'field': 'wspd_max' },
+        { 'headerName': 'Wind Direction (avg)', 'field': 'wdir_avg' },
+        ]
+    
+    readings_table = dag.AgGrid(
+        id="readings_table",
+        rowData = readings_df.to_dict('records'),
+        columnDefs = weather_column_defs,
+        defaultColDef={"resizable": True, "sortable": True, 
+                    "filter": False,
+                    "initialWidth": 200,
+                    "wrapHeaderText": True,
+                    "autoHeaderHeight": True,
+                    },
+        columnSize="sizeToFit",
+        # dashGridOptions={"rowSelection": "single", "cellSelection": False, "animateRows": False},        
+    )
+    
+    # readings_table =  dbc.Table.from_dataframe(readings_df, responsive=True)
+        
+    return(readings_table)
+
+
 
 
 # this currently is not used.   Need to determine how to insert a whole AG grid into html 
     # there is a "I can't json this" error
 
-def readings_grid_view(weather_df):
+def hourly_readings_grid_view(weather_df):
     """given data frame of weather from database, convert to presentation grid"""
     table_df = pd.DataFrame().assign(
         date = weather_df.represented_date,
@@ -171,6 +228,29 @@ def readings_grid_view(weather_df):
     )   
     return(grid)
 
+
+def hourly_weather_form():
+    today =  datetime.now(tz=ZoneInfo('US/Eastern')).date().strftime("%Y-%m-%d")
+    
+    # using bootstrap classes here becuase the default style is large and thin which doesn't match
+    form = dbc.Row(
+        [
+            dbc.Col(
+                dcc.DatePickerSingle(id='hourly-weather-date-picker',
+                                     display_format='YYYY-MM-DD',
+                                     first_day_of_week = 1,                                       
+                                     placeholder="Select Date",
+                                     date = today, 
+                                     className="fs-6 fw-semibold"),
+                className="me-3",
+                width = "auto"
+
+                ),
+        ],
+        className="g-2",
+        )
+    
+    return(form)
 
 ######################################
 #### EWX RM API Model Components
