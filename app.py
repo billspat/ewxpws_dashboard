@@ -72,28 +72,28 @@ app.layout =  render_dash_template_string(get_template(template_file = "main.htm
     [Output("text_station_table_selection", "children"),
     Output("text_station_table_selection", "href"),
     Output("station_type_cell", "children"),
-    Output("hourly_readings_table", "children", allow_duplicate=True),
+    # Output("hourly_readings_table", "children", allow_duplicate=True),
     Output('tomcast-results', 'children',allow_duplicate=True)],
     Input("station_table", "selectedRows"),
     prevent_initial_call=True,
 )
 def station_table_row_data(row)->tuple[str,str,str,str]:
     if row is None or row == []:
-        return ("","", "",  dbc.Alert("select a station above", color="warning"),"")
+        return ("","", "", "") # dbc.Alert("select a station above", color="warning"),"")
     # we got a list but just want one
     #try:
     if isinstance(row,list): row = row[0]
     if isinstance(row, dict) and 'station_code' in row:
         station_code = row['station_code']
         station_type = row['type']
-        readings_table  = hourly_readings_table(station_code)
+        # readings_table  = hourly_readings_table(station_code)
             
     else:
         station_code = ""
         station_type = ""
         readings_table = html.Div("invalid station selection", className="fw-bold")    
         
-    return (station_code, station_code, station_type, readings_table, "") 
+    return (station_code, station_code, station_type,  "") #readings_table, "") 
     #except Exception as e:
     #    return ("","", e)
 
@@ -154,23 +154,27 @@ def display_marker_click(*args):
 
 
 
-# ##### Hourly Weather
-# @app.callback(
-#     Output("hourly_readings_table", "children", allow_duplicate=True),
-#     Input("hourly-weather-date-picker", "value"),
-#     State("text_station_table_selection", "children"),
-#     prevent_initial_call=True,
-# )
-# def redraw_hourly_weather_table(hourly_weather_date_str, station_code):
-#     for_date = date.fromisoformat(hourly_weather_date_str)
-#     readings_table  = hourly_readings_table(station_code, for_date = for_date)
-#     return(readings_table)
-# # hourly-weather-date-picker
+##### Hourly Weather
+@app.callback(
+    Output("hourly_readings_table", "children", allow_duplicate=True),
+    [
+        Input("hourly-weather-date-picker", "date"),
+        Input("text_station_table_selection", "children")
+    ],
+    prevent_initial_call=True,
+)
+def redraw_hourly_weather_table(hourly_weather_date, station_code):
+    if not station_code:
+        return(dbc.Alert("select a station above", color="warning"))
+    
+    # for_date = date.fromisoformat(hourly_weather_date)
+    readings_table  = hourly_readings_table(station_code, for_date = hourly_weather_date)
+    return(readings_table)
+
+
 
 
 ##### WEATHER SUMMARY
-
-
 ### clear the weather summary table when new station is selected
 @app.callback(
     Output('weather-summary-table', 'children',allow_duplicate=True),
