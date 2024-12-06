@@ -270,16 +270,21 @@ def tomcast_form():
     # using bootstrap classes here becuase the default style is large and thin which doesn't match
     form = dbc.Row(
         [
-            dbc.Col(pws_date_picker(id='tomcast-date-picker'),
-                width = "auto"
-                ),
+
             dbc.Col([
-                html.Div("Date of last spray or date to start accumulating DSV:", 
+                html.Div("Date of last spray/date to start accumulating DSV:", 
                         className="col-auto me-3 d-none d-sm-inline-block"),
                 pws_date_picker(id='tomcast-spray-date-picker', initial_date_str= seven_days_ago_str )
                 ],
                 className="me-3",
                 width = "auto"             
+                ),
+            dbc.Col([
+                html.Div("Date:", 
+                        className="col-auto me-3 d-none d-sm-inline-block"),
+                pws_date_picker(id='tomcast-date-picker')
+                ],
+                width = "auto"
                 ),
             dbc.Col(
                 dbc.Button("Run Tomcast", 
@@ -289,8 +294,12 @@ def tomcast_form():
                 
                 width="auto"
                 ),
-            html.Div("", id="tomcast_loading_message")
-        
+            dbc.Col(
+                html.Div("",
+                     className="col-auto me-3 d-none d-sm-inline-block text-muted", 
+                     id="tomcast_loading_message"),
+            )
+
         ],
         className="g-2",
         )

@@ -53,7 +53,8 @@ app.layout =  render_dash_template_string(get_template(template_file = "main.htm
     station_map = station_map(station_records()),
     hourly_weather_form = hourly_weather_form(),
     tomcast_form = pwsc.tomcast_form(), 
-    weather_summary_form = pwsc.weather_summary_form()    
+    tomcast_result_container = dcc.Loading(html.Div(id="tomcast-results", className="mt-3 p-1")),
+    weather_summary_form = pwsc.weather_summary_form()  
   )
  
 
@@ -206,26 +207,26 @@ def weather_summary(n_clicks, station_code, select_date):
     return(weather_summary_grid)
 
 
+##### TOMCAST ####################
 
-##### TOMCAST 
 @app.callback(
-    Output('tomcast-results', 'children',allow_duplicate=True),
+    Output('tomcast-results', 'children'),  
     Input('run-tomcast-button','n_clicks'),
     State("text_station_table_selection", "children"),
     State("tomcast-date-picker", "date"),
     State("tomcast-spray-date-picker", "date"),
     prevent_initial_call=True,
     )
-def tomcast(n_clicks, station_code, select_date,date_start_accumulation):
+def tomcast(n_clicks, station_code, select_date, date_start_accumulation):
     # input checking 
     if not station_code:
-        return(dbc.Alert("select a station above", color="error"))
+        return dbc.Alert("select a station above", color="error")
     
     if not select_date or not(isinstance(select_date, str)):
-        return(dbc.Alert("select a date, optional spray date, and click 'run tomcast'"))
+        return dbc.Alert("select a date, optional spray date, and click 'run tomcast'")
     
     # run model and format output
-    return(tomcast_model(station_code, select_date,date_start_accumulation))
+    return tomcast_model(station_code, select_date,date_start_accumulation)
     
   
                 

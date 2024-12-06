@@ -416,7 +416,7 @@
                           <div id="weather_summary_form" class="p-1">
                             {{ weather_summary_form | plotly}}
                           </div>                         
-                          <div  id = "weather-summary-table" class="mt-3 p-1">                            
+                          <div  id = "weather-summary-table" class="min-vh-100 mt-3 p-1">                            
                           </div>                       
                         </div>
 
@@ -425,8 +425,8 @@
                           <div id="tomcast_form" class="p-1">
                             {{ tomcast_form | plotly}}
                           </div>
-                          
-                          <div id="tomcast-results" class="mt-3 p-1">                            
+                          <div>
+                            {{ tomcast_result_container | plotly }}
                           </div>
                         </div>
 
