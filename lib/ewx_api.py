@@ -159,7 +159,7 @@ def tomcast(station_code:str,
     else:        
         return(DataFrame([{}]))
     
-def weather_model(station_code:str, select_date:Union[datetime,date,None] = None, weather:bool = True, base_rm_api_url:str = BASE_RM_API_URL, base_ewx_api_url:str = BASE_EWX_API_URL, ):
+def weather_summary(station_code:str, select_date:Union[datetime,date,None] = None, weather:bool = True, base_rm_api_url:str = BASE_RM_API_URL, base_ewx_api_url:str = BASE_EWX_API_URL, ):
     """get weathersummary api 
 
     Args:
@@ -178,4 +178,29 @@ def weather_model(station_code:str, select_date:Union[datetime,date,None] = None
     else:
         weather_df = DataFrame([{}])    
     return(weather_df)
+
+weather_summary_table_headers = {'date': 'Date',
+ 'atmp_min': 'Min Temp (F)',
+ 'atmp_max': 'Max Temp (F)',
+ 'atmp_avg': 'Avg Temp (F)',
+ 'relh_avg': 'Avg Relative Humidity %',
+ 'l_wet_0': 'Leaf wetness (standard)',
+ 'pcpn_single': 'Rainfall Daily (inches)',
+ 'pcpn0_accum': 'Rainfall Since 1/1 (inches)',
+ 'dd0_single': 'DD32F (BE) Daily',
+ 'dd0_accum': 'DD32F (BE) Since 1/1',
+ 'dd1_single': 'DD40F (BE) Daily',
+ 'dd1_accum': 'DD40F (BE) Since 1/1',
+ 'dd2_single': 'DD42F (BE) Daily',
+ 'dd2_accum': 'DD42F (BE) Since 1/1',
+ 'dd3_single': 'DD45F (BE) Daily',
+ 'dd3_accum': 'DD45F (BE) Since 1/1',
+ 'dd4_single': 'DD50F (BE) Daily',
+ 'dd4_accum': 'DD50F (BE) Since 1/1',
+ 'atmp_min_metric': 'Min Temp (C)',
+ 'atmp_max_metric': 'Max Temp (C)',
+ 'atmp_avg_metric': 'Avg Temp (C)',
+ 'pcpn_single_metric': 'Rainfall Daily (mm)',
+ 'pcpn0_accum_metric': 'Rainfall Since 1/1 (mm)'
+ }
 
