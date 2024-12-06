@@ -73,6 +73,9 @@ def degree2compass(deg:float)->str:
         str: compass direction abbreviation
     """
     
+    if not(deg) or isinstance(deg,str):
+        return ""
+    
     directions = [
     'N', 'NNE', 'NE', 'ENE',
     'E', 'ESE', 'SE', 'SSE',
