@@ -55,7 +55,10 @@ app.layout =  render_dash_template_string(get_template(template_file = "main.htm
     tomcast_form = pwsc.tomcast_form(), 
     tomcast_results = dcc.Loading(html.Div(id="tomcast-results", className="mt-3 p-1")),
     weather_summary_form = pwsc.weather_summary_form(),
-    weather_summary_results = dcc.Loading(html.Div(id = "weather-summary-table", className="mt-3 p-1"))  
+    weather_summary_results = dcc.Loading(html.Div(id = "weather-summary-table", className="mt-3 p-1")),
+    applescab_form = pwsc.applescab_form(), 
+    applescab_results = dcc.Loading(html.Div(id="applescab-results", className="mt-3 p-1")),
+      
   )
  
 

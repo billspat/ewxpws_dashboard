@@ -382,10 +382,14 @@
                         </li>
                         
                         <li class="nav-item" role="presentation">
-                          <a href="#tabs-tomcast-4" class="nav-link" data-bs-toggle="tab" aria-selected="false" tabindex="-1" role="tab">TOMCAST</a>
+                          <a href="#tabs-tomcast-4" class="nav-link" data-bs-toggle="tab" aria-selected="false" tabindex="-1" role="tab">TOMCAST Demo</a>
                         </li>
                         
-                        <li class="nav-item dropdown">
+                        <li class="nav-item" role="presentation">
+                          <a href="#tabs-applescab" class="nav-link" data-bs-toggle="tab" aria-selected="false" tabindex="-1" role="tab">Apple Scab Demo</a>
+                        </li>
+
+                        <!-- <li class="nav-item dropdown">
                           <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Crop Models</a>
                           <div class="dropdown-menu" >
                             <a class="dropdown-item" href="#">
@@ -395,7 +399,7 @@
                               model 2
                             </a>
                           </div>
-                        </li>
+                        </li> -->
                       </ul>
                     </div>
 
@@ -428,6 +432,16 @@
                           </div>
                           <div>
                             {{ tomcast_results | plotly }}
+                          </div>
+                        </div>
+
+                        <!-- APPLESCAB -->
+                        <div class="tab-pane" id="tabs-applescab" role="tabpanel">
+                          <div id="applescab_form" class="p-1">
+                            {{ applescab_form | plotly}}
+                          </div>
+                          <div>
+                            {{ applescab_results | plotly }}
                           </div>
                         </div>
 

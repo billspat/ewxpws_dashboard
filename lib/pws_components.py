@@ -412,7 +412,7 @@ def weather_summary_table(station_code:str, select_date:date=None):
         return(dbc.Alert(model_output)) 
         
     # for now, select few columns
-    ws_columns = ['date', 'atmp_min', 'atmp_avg', 'atmp_max',  'dd0_single', 'dd0_accum', 'pcpn_single','pcpn0_accum', 'l_wet_0']
+    ws_columns = ['date', 'atmp_avg', 'relh_avg', 'pcpn_single', 'pcpn0_accum', 'dd4_single', 'dd4_accum', 'l_wet_0']
 
     from .ewx_api import weather_summary_table_headers as ws_headers        
     ws_column_defs = [ { 'field': c, 'headerName': ws_headers[c] } for c in ws_columns]  
@@ -437,5 +437,107 @@ def weather_summary_table(station_code:str, select_date:date=None):
     
     return(grid)
         
-           
+  
+######### Apple Scab ############
+
+def applescab_form():
+    """build code to collect input variables and button to run apple scab model
+    in RM-API.
+    output is element from dash_boostrap_components, not an actual form
+    """
+    # using bootstrap classes here becuase the default style is large and thin which doesn't match
+    form = dbc.Row(
+        [
+
+            dbc.Col([
+                html.Div("Date of green tip:", 
+                        className="col-auto me-3 d-none d-sm-inline-block"),
+                pws_date_picker(id='applescab-greentip-date-picker', initial_date_str="")
+                ],
+                className="me-3",
+                width = "auto"             
+                ),
+            dbc.Col([
+                html.Div("Select Date:", 
+                        className="col-auto me-3 d-none d-sm-inline-block"),
+                pws_date_picker(id='applescab-date-picker')
+                ],
+                width = "auto"
+                ),
+            dbc.Col(
+                dbc.Button("Run Apple Scab model", 
+                            id="run-applescab-button", 
+                            class_name="btn btn-success d-none d-sm-inline-block"
+                            ), 
+                
+                width="auto"
+                ),
+            dbc.Col(
+                html.Div("",
+                     className="col-auto me-3 d-none d-sm-inline-block text-muted", 
+                     id="tomcast_loading_message"),
+            )
+
+        ],
+        className="g-2",
+        )
     
+    return(form)
+    
+
+def applescab_model(station_code:str, 
+                  select_date:date, 
+                  gt_start:date=None):
+    """invoke apple scab model calculation and format for display
+
+    Args:
+        station_code (str): valid station code from DB
+        select_date (date): date to run the model from
+        gt_start (date, optional): gtStart model param, date. Defaults to None.
+    """
+ 
+     # input checking
+    if not station_code or station_code is None:
+        return(dbc.Alert("select a station above", color="error"))
+    
+    if not select_date or not(isinstance(select_date, str)):
+        print(f"got this for select_date: {select_date}")
+        return("invalid date")
+
+    # allow either date object or a date string in iso format
+    if isinstance(select_date,str):
+        select_date = date.fromisoformat(select_date)
+    
+    # run model and format output to data frame
+    model_output = tomcast(station_code, select_date, gt_start = gt_start)
+    
+    # format for display.  See the colums to show here
+    display_columns = ['startDateTime', 'endDateTime', 'risk', 'progress']
+    
+    
+    from .ewx_api import applescab_table_headers as display_headers
+    column_defs = [ { 'field': c, 'headerName': display_headers[c] } for c in display_columns]  
+    model_output_filtered= model_output.loc[:,display_columns]
+    
+    grid = dag.AgGrid(
+        id="applescab_grid",
+        rowData=model_output_filtered.to_dict("records"),
+        columnDefs=column_defs,
+        dashGridOptions={"filter": False,
+                    "wrapHeaderText": True,
+                    "autoHeaderHeight": True,
+                    "pagination":True,
+                    "sortingOrder": ['desc', 'asc', None],
+                    "initialWidth": 200,                    
+                    },
+        
+        columnSize="sizeToFit",
+        )
+    
+    return(grid)
+
+
+
+ 
+
+ 
