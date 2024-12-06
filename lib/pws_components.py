@@ -261,7 +261,7 @@ def hourly_weather_form():
 
 ######################################
 #### EWX RM API Model Components
-from .ewx_api import tomcast, weather_model
+from .ewx_api import tomcast, weather_summary
 
 
 def tomcast_form():
@@ -371,6 +371,7 @@ def tomcast_model(station_code:str,
         
     return(tomcast_table)
 
+######### WEATHER SUMMARY ############
 
 def weather_summary_form():
     today =  datetime.now(tz=ZoneInfo('US/Eastern')).date().strftime("%Y-%m-%d")
@@ -384,7 +385,7 @@ def weather_summary_form():
                 width = "auto"
                 ),
             dbc.Col(
-                dbc.Button("Run Weather Model", 
+                dbc.Button("Calculate Weather Summary", 
                             id="run-weather-summary-button", 
                             class_name="btn btn-success d-none d-sm-inline-block"), 
                 width="auto"
@@ -404,27 +405,37 @@ def weather_summary_table(station_code:str, select_date:date=None):
         select_date (date, optional): date to END pulling data.  starts from 
             01-01 of year of date. Defaults to None, which uses today
     """
-    model_output = weather_model(station_code, select_date)
+    model_output = weather_summary(station_code, select_date)
+    
+    if not isinstance(model_output, pd.DataFrame):
+        # not a data frame, assume it's a message
+        return(dbc.Alert(model_output)) 
+        
+    # for now, select few columns
+    ws_columns = ['date', 'atmp_min', 'atmp_avg', 'atmp_max',  'dd0_single', 'dd0_accum', 'pcpn_single','pcpn0_accum', 'l_wet_0']
 
-    if isinstance(model_output, pd.DataFrame):
+    from .ewx_api import weather_summary_table_headers as ws_headers        
+    ws_column_defs = [ { 'field': c, 'headerName': ws_headers[c] } for c in ws_columns]  
+    model_output_filtered= model_output.loc[:,ws_columns]
+    
+    # note: sort by date descending to show most recent data first
+    grid = dag.AgGrid(
+        id="weather_summary_grid",
+        rowData=model_output_filtered.to_dict("records"),
+        columnDefs=ws_column_defs,
+        dashGridOptions={"filter": False,
+                    "wrapHeaderText": True,
+                    "autoHeaderHeight": True,
+                    "pagination":True,
+                    "sortingOrder": ['desc', 'asc', None],
+                    "initialWidth": 200,                    
+                    },
         
-        # for now, select few columns, and sort by date descending
-        columns = ['date', 'atmp_min', 'atmp_avg','atmp_max', 'dd0_single', 'dd0_accum']
-        column_defs = [{"field": c} if c != 'date' else {"field": c, "sort": "desc"} for c in columns]
-
-        model_output_filtered= model_output.loc[:,columns]
         
-        grid = dag.AgGrid(
-            id="weather_summary_grid",
-            rowData=model_output_filtered.to_dict("records"),
-            columnDefs=column_defs,
-            dashGridOptions={'pagination':True,
-                             'sortingOrder': ['desc', 'asc', None]},
-            columnSize="sizeToFit",
-            )
+        columnSize="sizeToFit",
+        )
+    
+    return(grid)
         
-        return(grid)
-        
-    else: # assume it's not a data frame, must be string with message
-        return(dbc.Alert(model_output))    
+           
     

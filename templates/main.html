@@ -378,7 +378,7 @@
                           <a href="#tabs-weather-4" class="nav-link active" data-bs-toggle="tab" aria-selected="true" role="tab">Hourly Data</a>
                         </li>
                         <li class="nav-item" role="presentation">
-                          <a href="#tabs-graph-4" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab">Weather Model</a>
+                          <a href="#tabs-graph-4" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab">Weather Summary</a>
                         </li>
                         
                         <li class="nav-item" role="presentation">
@@ -415,9 +415,10 @@
                         <div class="tab-pane" id="tabs-graph-4" role="tabpanel"> 
                           <div id="weather_summary_form" class="p-1">
                             {{ weather_summary_form | plotly}}
-                          </div>                         
-                          <div  id = "weather-summary-table" class="min-vh-100 mt-3 p-1">                            
-                          </div>                       
+                          </div>
+                          <div>
+                            {{weather_summary_results | plotly }}
+                          </div>                                                  
                         </div>
 
                         <!-- TOMCAST -->
@@ -426,7 +427,7 @@
                             {{ tomcast_form | plotly}}
                           </div>
                           <div>
-                            {{ tomcast_result_container | plotly }}
+                            {{ tomcast_results | plotly }}
                           </div>
                         </div>
 

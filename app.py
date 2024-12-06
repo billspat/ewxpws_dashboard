@@ -53,8 +53,9 @@ app.layout =  render_dash_template_string(get_template(template_file = "main.htm
     station_map = station_map(station_records()),
     hourly_weather_form = hourly_weather_form(),
     tomcast_form = pwsc.tomcast_form(), 
-    tomcast_result_container = dcc.Loading(html.Div(id="tomcast-results", className="mt-3 p-1")),
-    weather_summary_form = pwsc.weather_summary_form()  
+    tomcast_results = dcc.Loading(html.Div(id="tomcast-results", className="mt-3 p-1")),
+    weather_summary_form = pwsc.weather_summary_form(),
+    weather_summary_results = dcc.Loading(html.Div(id = "weather-summary-table", className="mt-3 p-1"))  
   )
  
 
@@ -175,7 +176,7 @@ def redraw_hourly_weather_table(hourly_weather_date, station_code):
 
 
 
-##### WEATHER SUMMARY
+##### WEATHER SUMMARY model
 ### clear the weather summary table when new station is selected
 @app.callback(
     Output('weather-summary-table', 'children',allow_duplicate=True),
