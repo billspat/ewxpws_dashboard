@@ -12,7 +12,8 @@ load_dotenv()
 from os import getenv
 from pandas import DataFrame
 from typing import Union
-from .converters import MICHIGAN_TIME_ZONE
+from .converters import MICHIGAN_TIME_ZONE_KEY,today_localtime
+
 
 
 ####### MODULE STYLE ##############
@@ -64,19 +65,26 @@ def ewx_headers(base_ewx_api_url:str = BASE_EWX_API_URL):
         'Accept': "application/json",
         'Authorization': f"Bearer ${token_value(base_ewx_api_url)}"
         }
-
-def date_to_api_str(d):
+    
+def date_to_api_str(d, default_date=today_localtime(MICHIGAN_TIME_ZONE_KEY))->str:
     """ convert date to correct type and format for use in EWX API's
     
     assumes the date in the time zone for the station
     
     Args:
-        d {date |datetime | }
-    
+        d {date |datetime | } date to convert, or None
+        default_date: date to fall back on, defaults to today's date.  
     """
-    if d is None:
-    # must set timezone explicitly since no guarantee tz of server (or if it's UTC)
-        d = datetime.now(tz=MICHIGAN_TIME_ZONE).date()
+    if not d:
+        # d is blank, fall back to default
+        # but check the default to see what to do with that.  
+        if isinstance(default_date,date):
+            d = default_date
+        elif isinstance(default_date, datetime):
+            d = default_date.date()
+        else:
+            # default is not a date, since d is nul, just return default as-is
+            return(default_date)        
     elif isinstance(d, datetime):
         d = d.date()
     elif isinstance(d, str):
@@ -204,3 +212,50 @@ weather_summary_table_headers = {'date': 'Date',
  'pcpn0_accum_metric': 'Rainfall Since 1/1 (mm)'
  }
 
+
+def applescab(station_code:str, 
+               select_date:date = None, 
+               gt_start:date = None,
+               base_rm_api_url:str = BASE_RM_API_URL, 
+               base_ewx_api_url:str = BASE_EWX_API_URL, 
+               )->DataFrame: 
+    """request the applescab model from the RM-API and return data frame
+
+    Args:
+        station_code (str): valid station code from db
+        select_date (date, optional): date to run from. Defaults to None which 
+           uses today's date
+        gt_start (date, optional): date to set green_tip. Defaults to None, 
+            which tells the model to estimate green tip based on DD
+        base_rm_api_url (str, optional): URL for rm api. Defaults to BASE_RM_API_URL.
+        base_ewx_api_url (str, optional): UR for ewx web api. Defaults to BASE_EWX_API_URL.
+        
+    """
+    
+    result_model_code:str = "applescab"        
+    select_date_str = date_to_api_str(select_date)
+    gt_start_str = date_to_api_str(gt_start, default_date="")        
+    model_url = f"{base_rm_api_url}/db2/run?stationCode={station_code}&stationType={PWS_STATION_TYPE}&selectDate={select_date_str}&resultModelCode={result_model_code}&gtStart={gt_start_str}"
+    model_data = ewx_request(model_url, base_ewx_api_url)    
+    
+    if model_data and 'Table' in model_data:
+        model_df= DataFrame(model_data['Table'])        
+    else:
+        model_df = DataFrame([{}])    
+    return(model_df)
+
+
+applescab_table_headers = {
+    "startDateTime": "Start",
+    "endDateTime": "End",
+    "timeString": "Time",
+    "durationWet": "Duration Wet",
+    "durationSpan": "Duration Span",
+    "atmp_avg": "Average Temp",
+    "pcpn": "Rain (inches)",
+    "risk": "Risk",
+    "symptom_date": "Symptom Date",
+    "wet_hours_at_avg_temp_needed": "Wet hrs @ avg temp for 1st infection",
+    "progress": "Progress toward infection",
+    "highlight": "highlight"
+}
