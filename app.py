@@ -231,8 +231,28 @@ def tomcast(n_clicks, station_code, select_date, date_start_accumulation):
     
     # run model and format output
     return tomcast_model(station_code, select_date,date_start_accumulation)
+
+##### APPLESCAB ####################
+
+@app.callback(
+    Output('applescab-results', 'children'),  
+    Input('run-applescab-button','n_clicks'),
+    State("text_station_table_selection", "children"),
+    State("applescab-date-picker", "date"),
+    State("applescab-greentip-date-picker", "date"),
+    prevent_initial_call=True,
+    )
+def run_applescab(n_clicks, station_code, select_date, gt_start):
+    # input checking 
+    if not station_code:
+        return dbc.Alert("select a station above", color="error")
     
-  
+    if not select_date or not(isinstance(select_date, str)):
+        return dbc.Alert("select a date, optional green tip date, and click 'run'")
+    
+    # run model and format output
+    model_table = pwsc.applescab_model(station_code, select_date, gt_start)
+    return(model_table)
                 
 if __name__ == "__main__":
     # debug = None required to respect DASH_DEBUG environment var (True /False)

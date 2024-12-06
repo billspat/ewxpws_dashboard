@@ -4,12 +4,11 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 from datetime import date, time
 from zoneinfo import ZoneInfo
-from lib.pwsapi import get_station_codes, get_station_data, get_all_stations
 from datetime import date, timedelta
 
-from .pwsapi import get_hourly_readings,latest_readings
+from .pwsapi import get_hourly_readings,latest_readings, get_station_codes, get_station_data, get_all_stations
 import dash_ag_grid as dag
-import pandas as pd
+from pandas import DataFrame
 
 from .converters import hour_number2clock_str, degree2compass, kph2mph, c2f, mm2inch, today_localtime_str, first_of_year_string, days_ago
 
@@ -85,8 +84,8 @@ def station_table_narrow(station_records):
         dash_ag_grid.AgGrid table for placing on dash page
         
     """
-    df = pd.DataFrame(list(station_records.values()))
-    table_df = pd.DataFrame().assign(location = df.location_description, 
+    df = DataFrame(list(station_records.values()))
+    table_df = DataFrame().assign(location = df.location_description, 
                                      type=df['station_type'] + " (" + df["sampling_interval"].map(str)+" min)",
                                      station_code = df.station_code, 
                                      latest_reading = df.latest_reading_datetime)
@@ -132,11 +131,11 @@ def hourly_readings_dataframe(station_code, for_date = None):
         if not hourly_weather_json:
             return("No Data")        
         
-        weather_df = pd.DataFrame(hourly_weather_json)
-        if(weather_df is None or (type(weather_df) != type(pd.DataFrame([{}]))) or weather_df.empty):
+        weather_df = DataFrame(hourly_weather_json)
+        if(weather_df is None or (type(weather_df) != type(DataFrame([{}]))) or weather_df.empty):
             return("No Data")        
         else:
-            view_df = pd.DataFrame().assign(
+            view_df = DataFrame().assign(
                 # date = weather_df['represented_date'],
                 hour     = weather_df.represented_hour,
                 time     = weather_df.represented_hour.map(hour_number2clock_str), 
@@ -163,7 +162,7 @@ def hourly_readings_table(station_code, for_date = None):
 
     readings_df = hourly_readings_dataframe(station_code, for_date)
     
-    if(readings_df is None or (type(readings_df) != type(pd.DataFrame([{}]))) or readings_df.empty):
+    if(readings_df is None or (type(readings_df) != type(DataFrame([{}]))) or readings_df.empty):
         return(html.Div("no recent data", className="fw-bold"))
     
     
@@ -205,7 +204,7 @@ def hourly_readings_table(station_code, for_date = None):
 
 def hourly_readings_grid_view(weather_df):
     """given data frame of weather from database, convert to presentation grid"""
-    table_df = pd.DataFrame().assign(
+    table_df = DataFrame().assign(
         date = weather_df.represented_date,
         hour = f"{str(time(hour = weather_df.represented_hour-1, minute=0))} - {str(time(hour = weather_df.represented_hour-1, minute=59))}", 
         atmp = weather_df.atmp_avg_hourly,
@@ -259,9 +258,12 @@ def hourly_weather_form():
         
     return(form)
 
+
+
+
 ######################################
 #### EWX RM API Model Components
-from .ewx_api import tomcast, weather_summary
+from .ewx_api import tomcast, weather_summary, applescab  
 
 
 def tomcast_form():
@@ -334,7 +336,7 @@ def tomcast_model(station_code:str,
     tomcast_output = tomcast(station_code, select_date, 
                              date_start_accumulation=date_start_accumulation)
     
-    if not isinstance(tomcast_output, pd.DataFrame):
+    if not isinstance(tomcast_output, DataFrame):
         return(tomcast_output)
     
     # to-do : add style/colors to table
@@ -407,22 +409,21 @@ def weather_summary_table(station_code:str, select_date:date=None):
     """
     model_output = weather_summary(station_code, select_date)
     
-    if not isinstance(model_output, pd.DataFrame):
+    if not isinstance(model_output, DataFrame):
         # not a data frame, assume it's a message
         return(dbc.Alert(model_output)) 
         
     # for now, select few columns
     ws_columns = ['date', 'atmp_avg', 'relh_avg', 'pcpn_single', 'pcpn0_accum', 'dd4_single', 'dd4_accum', 'l_wet_0']
-
-    from .ewx_api import weather_summary_table_headers as ws_headers        
-    ws_column_defs = [ { 'field': c, 'headerName': ws_headers[c] } for c in ws_columns]  
+    from .ewx_api import weather_summary_table_headers as display_headers 
+    column_defs = [ { 'field': c, 'headerName': display_headers[c] } for c in ws_columns]  
     model_output_filtered= model_output.loc[:,ws_columns]
     
     # note: sort by date descending to show most recent data first
     grid = dag.AgGrid(
         id="weather_summary_grid",
         rowData=model_output_filtered.to_dict("records"),
-        columnDefs=ws_column_defs,
+        columnDefs=column_defs,
         dashGridOptions={"filter": False,
                     "wrapHeaderText": True,
                     "autoHeaderHeight": True,
@@ -472,12 +473,6 @@ def applescab_form():
                 
                 width="auto"
                 ),
-            dbc.Col(
-                html.Div("",
-                     className="col-auto me-3 d-none d-sm-inline-block text-muted", 
-                     id="tomcast_loading_message"),
-            )
-
         ],
         className="g-2",
         )
@@ -508,25 +503,36 @@ def applescab_model(station_code:str,
     if isinstance(select_date,str):
         select_date = date.fromisoformat(select_date)
     
+    
     # run model and format output to data frame
-    model_output = tomcast(station_code, select_date, gt_start = gt_start)
+    model_output = applescab(station_code, select_date, gt_start = gt_start)
+    
+    if not isinstance(model_output, DataFrame):
+        return(model_output)
     
     # format for display.  See the colums to show here
     display_columns = ['startDateTime', 'endDateTime', 'risk', 'progress']
     
     
     from .ewx_api import applescab_table_headers as display_headers
-    column_defs = [ { 'field': c, 'headerName': display_headers[c] } for c in display_columns]  
+    column_defs = [ { 'field': c, 'headerName': display_headers[c] } for c in display_columns] 
+    
+    applescab_row_class_rules = {
+        "bg-warning-subtle": "params.data.risk == 'Light'",
+        "bg-warning": "params.data.risk == 'Moderate'",
+        "bg-danger fw-bold" : "params.data.risk == 'Heavy'",
+        } 
+       
     model_output_filtered= model_output.loc[:,display_columns]
     
     grid = dag.AgGrid(
         id="applescab_grid",
         rowData=model_output_filtered.to_dict("records"),
         columnDefs=column_defs,
+        rowClassRules = applescab_row_class_rules,
         dashGridOptions={"filter": False,
                     "wrapHeaderText": True,
                     "autoHeaderHeight": True,
-                    "pagination":True,
                     "sortingOrder": ['desc', 'asc', None],
                     "initialWidth": 200,                    
                     },
