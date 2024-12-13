@@ -177,9 +177,38 @@ def redraw_hourly_weather_table(hourly_weather_date, station_code):
     return(readings_table)
 
 
+###### MODEL FORMS AND OUTPUTS
 
+## turn on/off model output and forms as stations are selected
+@app.callback(
+    [
+        Output('data_section', 'style'), 
+        Output('no_station_message', 'style')
+    ],
+    Input("station_table", "selectedRows"),
+    prevent_initial_call=True,
+)
+def display_form_on_select(row):    
+    style_to_hide_model_form = ({'display': 'none'},{'display': 'inline'})
+    style_to_show_model_form = ({"diplay":"inline"},{'display': 'none'})
+    
+    if row is None or row == []:
+        return (style_to_hide_model_form) 
+    if isinstance(row,list): row = row[0]
+    if isinstance(row, dict) and 'station_code' in row:
+        station_code = row['station_code']
+    else:
+        station_code = ""
+    
+    if station_code:            
+        return (style_to_show_model_form ) 
+    else:
+        return(style_to_hide_model_form )
+    
 
 ##### WEATHER SUMMARY model
+
+
 ### clear the weather summary table when new station is selected
 @app.callback(
     Output('weather-summary-table', 'children',allow_duplicate=True),
@@ -213,6 +242,8 @@ def weather_summary(n_clicks, station_code, select_date):
 
 ##### TOMCAST ####################
 
+
+## TOMCAST MODEL RUN
 @app.callback(
     Output('tomcast-results', 'children'),  
     Input('run-tomcast-button','n_clicks'),
@@ -231,6 +262,8 @@ def tomcast(n_clicks, station_code, select_date, date_start_accumulation):
     
     # run model and format output
     return tomcast_model(station_code, select_date,date_start_accumulation)
+
+
 
 ##### APPLESCAB ####################
 
