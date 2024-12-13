@@ -47,6 +47,10 @@ def get_template(template_file, template_dir:str = TEMPLATES_DIR)->str:
     main_template:str = template_file.read()
   return(main_template)
   
+
+
+body_with_class_for_template = '<body class="layout-fluid">'
+app.index_string = app.index_string.replace('<body>', body_with_class_for_template)
     
 app.layout =  render_dash_template_string(get_template(template_file = "main.html"),
     station_table = pwsc.station_table_narrow(station_records()),
