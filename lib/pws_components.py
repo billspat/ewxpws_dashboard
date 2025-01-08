@@ -1,6 +1,9 @@
 
 # pws_components.py  reuseable components for pages
 from dash import html, dcc
+import plotly.express as px
+
+
 import dash_bootstrap_components as dbc
 from datetime import date, time
 from zoneinfo import ZoneInfo
@@ -438,7 +441,116 @@ def weather_summary_table(station_code:str, select_date:date=None):
     
     return(grid)
         
-  
+
+###### WEATHER SUMMARY TABLE AND GRAPH
+
+def weather_summary_table_and_graph(station_code:str, select_date:date=None):
+    """run weather model to pull data, show and format for inclusion in Dash UI
+    Pulling these data takes a little while for a full year, so this method
+    creates both a grid and a figure from that data so we don't pull the data 
+    twice.  
+
+    Args:
+        station_code (str): valid PWS station code from database
+        select_date (date, optional): date to END pulling data.  starts from 
+            01-01 of year of date, defaults to None, which uses today 
+    """
+    
+    model_output = weather_summary(station_code, select_date)
+    
+    if not isinstance(model_output, DataFrame):
+        # not a data frame, assume it's a message
+        return(dbc.Alert(model_output)) 
+        
+    # for now, select few columns
+    ws_columns = ['date', 'atmp_avg', 'relh_avg', 'pcpn_single', 'pcpn0_accum', 'dd4_single', 'dd4_accum', 'l_wet_0']
+    from .ewx_api import weather_summary_table_headers as display_headers 
+    column_defs = [ { 'field': c, 'headerName': display_headers[c] } for c in ws_columns]  
+    model_output_filtered= model_output.loc[:,ws_columns]
+    
+    # note: sort by date descending to show most recent data first
+    grid = dag.AgGrid(
+        id="weather_summary_grid",
+        rowData=model_output_filtered.to_dict("records"),
+        columnDefs=column_defs,
+        dashGridOptions={"filter": False,
+                    "wrapHeaderText": True,
+                    "autoHeaderHeight": True,
+                    "pagination":True,
+                    "sortingOrder": ['desc', 'asc', None],
+                    "initialWidth": 200,                    
+                    },
+        
+        
+        columnSize="sizeToFit",
+        )
+    
+    
+    fig = px.line(model_output_filtered, x='date', y='atmp_avg', title=f"Average Temperature for {station_code}")
+
+    fig.update_xaxes(
+        rangeslider_visible=True,
+        rangeselector=dict(
+            buttons=list([
+                dict(count=1, label="1m", step="month", stepmode="backward"),
+                dict(count=6, label="6m", step="month", stepmode="backward"),
+                dict(count=1, label="YTD", step="year", stepmode="todate"),
+                dict(count=1, label="1y", step="year", stepmode="backward"),
+                dict(step="all")
+            ])
+        )
+    )
+    
+    return(grid, fig)
+
+
+### this is for testing, and pulls the data twice
+def weather_summary_viz(station_code, select_date = None):
+
+    if not station_code:
+        return(None)
+    
+    weather_df = weather_summary(station_code, select_date)
+    
+    if not isinstance(weather_df, DataFrame):
+        # not a data frame, assume it's a message
+        print('did not get a dataframe back from weather_summary()')
+        print(weather_df)
+        return(dbc.Alert(weather_df)) 
+
+    # for now, select few columns
+    data_column = 'atmp_avg'
+    data_column_label = 'Average Temperature (F)'
+    ws_columns = ['date', data_column ]
+
+    weather_df_filtered = weather_df.loc[:,ws_columns]
+
+    fig = px.line(weather_df_filtered, 
+                    x='date', y=data_column, 
+                    title=f"Average Temperature for {station_code}",
+                    labels={
+                    data_column: data_column_label},
+                )
+    
+    fig.update_layout(autotypenumbers='convert types')
+
+    fig.update_xaxes(
+        rangeslider_visible=True,
+        rangeselector=dict(
+            buttons=list([
+                dict(count=1, label="1m", step="month", stepmode="backward"),
+                dict(count=6, label="6m", step="month", stepmode="backward"),
+                dict(count=1, label="YTD", step="year", stepmode="todate"),
+                # dict(count=1, label="1y", step="year", stepmode="backward"),
+                dict(step="all")
+            ])
+        )
+    )
+    
+    return(fig)
+
+
+
 ######### Apple Scab ############
 
 def applescab_form():

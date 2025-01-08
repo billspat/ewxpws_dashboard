@@ -1,0 +1,109 @@
+<!-- weather_stat_cards_medium.html -->
+<!-- designed to hold individual stats in a row of cards, large and lots of white space -->
+<!--  See also the tabler.io admin preview, could hold mini line graph below each stat at bottom of card -->
+<!-- the tabler.io original examples also had drop-downs in the card header to select different periods  -->
+<div class="col-sm-6 col-md-2 col-lg-2">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="subheader">Temperature</div>
+        </div>
+        <div class="d-flex align-items-baseline">
+          <div id="current-atmp" class="h1 mb-0 me-2">--</div>
+          <div class="me-auto">
+            <span class="d-inline-flex align-items-center lh-1">
+              F                           
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-md-2 col-lg-2">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="subheader">Precipitation</div>
+          <div class="ms-auto lh-1">
+            <!-- example drop down in card sub-head that could change the units -->
+            <!-- <div class="dropdown">
+              <a class="dropdown-toggle text-muted" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">hourly</a>
+              <div class="dropdown-menu dropdown-menu-end">
+                <a class="dropdown-item active" href="#">inches</a>
+                <a class="dropdown-item" href="#">mm</a>                        
+              </div>
+            </div> -->
+          </div>
+        </div>
+        <div class="d-flex align-items-baseline">
+          <div id="current-pcpn" class="h1 mb-3 me-2">--</div>
+          <div class="me-auto">
+            <span class="d-inline-flex align-items-center lh-1">
+              mm               
+            </span>
+          </div>
+        </div>
+        <div id="" class="chart-sm"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="col-sm-6 col-md-2 col-lg-2">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="subheader">Rel Humidity</div>
+          <!-- <div class="ms-auto lh-1">
+            <div class="dropdown">
+              <a class="dropdown-toggle text-muted" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">current</a>
+              <div class="dropdown-menu dropdown-menu-end">
+                <a class="dropdown-item active" href="#">current</a>
+                <a class="dropdown-item" href="#">daily</a>
+                <a class="dropdown-item" href="#">other</a>
+              </div>
+            </div> 
+          </div> -->
+        </div>
+        <div class="d-flex align-items-baseline">
+          <div id="current-relh" class="h1 mb-3 me-2">--</div>
+          <div class="me-auto">
+            <span class="d-inline-flex align-items-center lh-1">
+              %                           
+            </span>
+          </div>
+        </div>
+        <div id="chart-active-users" class="chart-sm"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-md-2 col-lg-2">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="subheader">Wind Speed</div>
+            <!-- <div class="ms-auto lh-1">
+              <div class="dropdown">
+                  <a class="dropdown-toggle text-muted" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">current</a>
+                  <div class="dropdown-menu dropdown-menu-end">
+                    <a class="dropdown-item active" href="#">current</a>
+                    <a class="dropdown-item" href="#">daily</a>
+                    <a class="dropdown-item" href="#">other</a>
+                  </div>
+              </div>
+            </div> -->
+        </div>
+        <div class="d-flex align-items-baseline">
+          <div id="current-wspd" class="h1 mb-3 me-2">--</div>
+          <div class="me-auto">
+            <span class="d-inline-flex align-items-center lh-1">
+              kph                           
+            </span>
+          </div>
+        </div>
+        <div id="current-wspd-datetime" class="text-muted"></div>
+      </div>
+    </div>
+  </div>

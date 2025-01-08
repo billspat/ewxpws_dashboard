@@ -48,7 +48,6 @@ def get_template(template_file, template_dir:str = TEMPLATES_DIR)->str:
   return(main_template)
   
 
-
 body_with_class_for_template = '<body class="layout-fluid">'
 app.index_string = app.index_string.replace('<body>', body_with_class_for_template)
     
@@ -56,6 +55,7 @@ app.layout =  render_dash_template_string(get_template(template_file = "main.htm
     station_table = pwsc.station_table_narrow(station_records()),
     station_map = station_map(station_records()),
     hourly_weather_form = hourly_weather_form(),
+    weather_viz = dcc.Loading(html.Div(id = "weather-summary-viz", className="mt-3 p-1")),
     tomcast_form = pwsc.tomcast_form(), 
     tomcast_results = dcc.Loading(html.Div(id="tomcast-results", className="mt-3 p-1")),
     weather_summary_form = pwsc.weather_summary_form(),
@@ -64,7 +64,8 @@ app.layout =  render_dash_template_string(get_template(template_file = "main.htm
     applescab_results = dcc.Loading(html.Div(id="applescab-results", className="mt-3 p-1")),
       
   )
- 
+
+
 
 #### REACTIVITY 
 
@@ -161,6 +162,18 @@ def display_marker_click(*args):
         return({"function": f"params.data.station_code == '{station_code}'"})            
         # return(station_code, {"function": f"params.data.station_code == '{station_code}'"})   
 
+
+##### weather viz figure graph
+@app.callback(
+    Output("weather-summary-viz",'children'),
+    Input("text_station_table_selection", "children"),
+    prevent_initial_call=True,
+)
+def redraw_weather_viz(station_code):
+    if not station_code:
+        return(dbc.Alert("select a station above", color="warning"))
+    
+    return(dcc.Graph(figure=pwsc.weather_summary_viz(station_code),id='weather-graph'))
 
 
 ##### Hourly Weather

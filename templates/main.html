@@ -250,20 +250,25 @@
                   <div class="card mb-3">
                     <div class="card-header">
                       <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
-
                         <li class="nav-item" role="presentation">
-                          <a href="#tabs-weather-4" class="nav-link active" data-bs-toggle="tab" aria-selected="true" role="tab">Hourly Data</a>
+                          <a href="#tabs-weather-viz" 
+                            class="nav-link active" data-bs-toggle="tab" aria-selected="true" role="tab">Weather Graph</a>
+                        </li>                        
+                        <li class="nav-item" role="presentation">
+                          <a href="#tabs-weather-4"
+                            class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab">Hourly Data</a>
                         </li>
                         <li class="nav-item" role="presentation">
-                          <a href="#tabs-graph-4" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab">Weather Summary</a>
-                        </li>
-                        
+                          <a href="#tabs-weather-summary-table" 
+                            class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab">Weather Summary</a>
+                        </li>                         
                         <li class="nav-item" role="presentation">
-                          <a href="#tabs-tomcast-4" class="nav-link" data-bs-toggle="tab" aria-selected="false" tabindex="-1" role="tab">TOMCAST Demo</a>
-                        </li>
-                        
+                          <a href="#tabs-tomcast-4"
+                            class="nav-link" data-bs-toggle="tab" aria-selected="false" tabindex="-1" role="tab">TOMCAST Demo</a>
+                        </li>                        
                         <li class="nav-item" role="presentation">
-                          <a href="#tabs-applescab" class="nav-link" data-bs-toggle="tab" aria-selected="false" tabindex="-1" role="tab">Apple Scab Demo</a>
+                          <a href="#tabs-applescab" 
+                            class="nav-link" data-bs-toggle="tab" aria-selected="false" tabindex="-1" role="tab">Apple Scab Demo</a>
                         </li>
 
                         <!-- <li class="nav-item dropdown">
@@ -283,17 +288,25 @@
                     <!-- tab contents-->
                     <div class="card-body">
                       <div class="tab-content">
+                        <!-- WEATHER VISUALIZATION  -->
+                        <div class="tab-pane active show" id="tabs-weather-viz" role="tabpanel"> 
+                          <div class="p-1">
+                            {{weather_viz | plotly}}
+                          </div>                           
+                        </div>
+                        
 
                         <!-- HOURLY TABLE -->
-                        <div class="tab-pane active show" id="tabs-weather-4" role="tabpanel"> 
+                        <div class="tab-pane" id="tabs-weather-4" role="tabpanel"> 
                           <div class="p-1">
                             {{ hourly_weather_form | plotly}}
                           </div>                           
                           <div  id = "hourly_readings_table" class="table m-0 p-0"></div>                       
                         </div>
 
+
                         <!-- WEATHER SUMMARY -->
-                        <div class="tab-pane" id="tabs-graph-4" role="tabpanel"> 
+                        <div class="tab-pane" id="tabs-weather-summary-table" role="tabpanel"> 
                           <div id="weather_summary_form" class="p-1">
                             {{ weather_summary_form | plotly}}
                           </div>                        
