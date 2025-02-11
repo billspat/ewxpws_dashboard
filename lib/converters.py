@@ -31,6 +31,12 @@ def days_ago(d:int, timezone_key = MICHIGAN_TIME_ZONE_KEY):
 
 
 
+def first_of_last_year_string():
+    """get Jan 1st of last year to limit dates"""
+    this_year = today_localtime().year - 1
+    return date(this_year, 1,1).strftime("%Y-%m-%d")
+
+
 def first_of_year_string():
     """get the current year and Jan 1st to limit dates to this year"""
     this_year = today_localtime().year

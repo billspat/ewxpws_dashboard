@@ -13,7 +13,7 @@ from .pwsapi import get_hourly_readings,latest_readings, get_station_codes, get_
 import dash_ag_grid as dag
 from pandas import DataFrame
 
-from .converters import hour_number2clock_str, degree2compass, kph2mph, c2f, mm2inch, today_localtime_str, first_of_year_string, days_ago
+from .converters import hour_number2clock_str, degree2compass, kph2mph, c2f, mm2inch, today_localtime_str, first_of_year_string, first_of_last_year_string, days_ago
 
 
 
@@ -242,7 +242,7 @@ def pws_date_picker(id:str = "", initial_date_str:str = None):
                 placeholder="Select Date",
                 date = initial_date_str, 
                 className="fs-6 fw-semibold me-3",
-                min_date_allowed=first_of_year_string(),
+                min_date_allowed=first_of_last_year_string(),
                 max_date_allowed=today_localtime_str(),
                 )
     
