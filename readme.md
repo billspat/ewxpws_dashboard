@@ -37,6 +37,6 @@ Dash will use the env variables `PORT` and `HOST`.  This app will use env vars
 to run the app from any directory, given a virtual environment in `./.venv`, :
 
 ```
-export APPDIR=$HOME/path/to/ewxpws_dashboard; export HOST='0.0.0.0'; export PORT=8002, export DASH_DEBUG=True; $APPDIR/.venv/bin/python $APPDIR/app.py
+export APPDIR=$HOME/path/to/ewxpws_dashboard; export HOST='0.0.0.0'; export PORT=8002; export DASH_DEBUG=True; $APPDIR/.venv/bin/python $APPDIR/app.py
 ```
 
