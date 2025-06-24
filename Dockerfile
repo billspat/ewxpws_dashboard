@@ -6,12 +6,11 @@ WORKDIR /app
 
 COPY ./requirements.txt /app/requirements.txt
 RUN python3 -m pip install --no-cache-dir --upgrade pip && \
- python3 -m pip install --no-cache-dir --upgrade -r /app/requirements.txt && \
- mk 
+ python3 -m pip install --no-cache-dir --upgrade -r /app/requirements.txt 
 
-COPY . .
+COPY . /app
 
-# RUN mkdir /.cache && chmod 777 /.cache
+RUN mkdir /.cache && chmod 777 /.cache
 
 # TODO use the correct command
 CMD ["python", "app.py"]
