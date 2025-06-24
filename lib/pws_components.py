@@ -29,7 +29,7 @@ YESTERDAY = date.today() - timedelta(days = 1)
 
 
 
-def station_table(station_records):
+def station_table(station_records, selected_row = None):
     
     station_data = list(station_records.values())
 
@@ -55,6 +55,7 @@ def station_table(station_records):
         defaultColDef={"resizable": True, "sortable": True, "filter": True},
         columnSize="sizeToFit",
         dashGridOptions={"rowSelection": "single", "cellSelection": False, "animateRows": False},
+        selectedRows= selected_row
     )
     
     return(grid)
@@ -77,21 +78,27 @@ def station_current_temperature(station_code):
     return(latest['atmp'])
     
         
-def station_table_narrow(station_records):
+def station_table_narrow(station_records, selected_row = None):
     """table of stations with a few carefully columns for narrow column display
 
     Args:
         station_records (dict[dict]): dictionary of station records keyed on station code that comes from API
         
     Returns:
-        dash_ag_grid.AgGrid table for placing on dash page
+        dash_ag_grid.AgGrid table for placing on dash page with cols station_code, type and location. 
+        does not include latest_reading since the dash app does not update this table. 
         
     """
+    # convert the dictionary of records into an array and then a data frame. 
+    
     df = DataFrame(list(station_records.values()))
-    table_df = DataFrame().assign(location = df.location_description, 
-                                     type=df['station_type'] + " (" + df["sampling_interval"].map(str)+" min)",
-                                     station_code = df.station_code, 
-                                     latest_reading = df.latest_reading_datetime)
+    # select and rename columns
+    table_df = DataFrame().assign(station_code = df.station_code, 
+                                     type=df['station_type'] + " (" + df["sampling_interval"].map(str)+" min)",                                     
+                                     location = df.location_description,
+                                     status = df.active.apply(lambda a: "active" if a else "inactive") ,
+                                     # latest_reading = df.latest_reading_datetime
+                                     )
     
     station_fields = list(table_df.columns)
     station_column_defs = [{"field": f} for f in station_fields]
@@ -103,7 +110,7 @@ def station_table_narrow(station_records):
         defaultColDef={"resizable": True, "sortable": True, "filter": True},
         columnSize="sizeToFit",
         dashGridOptions={"rowSelection": "single", "cellSelection": False, "animateRows": False},
-        
+        selectedRows= selected_row,        
     )
     
     return(grid)

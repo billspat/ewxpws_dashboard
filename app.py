@@ -1,4 +1,5 @@
 
+import sys
 from os import getenv, path
 from dotenv import load_dotenv
 load_dotenv()
@@ -14,7 +15,7 @@ from dash_template_rendering import TemplateRenderer, render_dash_template_strin
 
 import lib.pws_components as pwsc
 from lib.pws_components import * 
-from lib.pwsapi import get_all_stations
+from lib.pwsapi import get_all_stations, get_station_data
 from lib.pws_map import station_map, station_marker_id, station_from_marker_id
 from lib.converters import degree2compass, kph2mph, c2f, mm2inch
 
@@ -29,15 +30,15 @@ TEMPLATES_DIR = getenv('DASH_TEMPLATE_DIR', path.join(APP_PATH, "templates"))
 
 TemplateRenderer(dash=app)
 
-# from flask_caching import Cache
-# cache = Cache(app.server, config={
-#     'CACHE_TYPE': 'filesystem',
-#     'CACHE_DIR': getenv('DASH_CACHE', path.join(APP_PATH, 'cache-directory'))
-# })
+from flask_caching import Cache
+cache = Cache(app.server, config={
+    'CACHE_TYPE': 'filesystem',
+    'CACHE_DIR': getenv('DASH_CACHE', path.join(APP_PATH, 'cache-directory'))
+})
 
 TIMEOUT:int = 60 # seconds
 
-# @cache.memoize(timeout=TIMEOUT)
+@cache.memoize(timeout=TIMEOUT)
 def station_records()->list:
     return(get_all_stations())
 
@@ -68,39 +69,29 @@ app.layout =  render_dash_template_string(get_template(template_file = "main.htm
     weather_summary_results = dcc.Loading(html.Div(id = "weather-summary-table", className="mt-3 p-1")),
     applescab_form = pwsc.applescab_form(), 
     applescab_results = dcc.Loading(html.Div(id="applescab-results", className="mt-3 p-1")),
-      
+    counter_debug  = html.Span("0", id = "counter-debug"),
   )
 
 
+#### REACTIVITY #####
 
-#### REACTIVITY 
-
-@app.callback(
-    Output("station-table-div", "children"), 
-    Input('interval-component', 'n_intervals'),
-    prevent_initial_call=True,)
-def station_table_data(n):
-    station_records = get_all_stations()
-    station_table = pwsc.station_table_narrow(station_records)
-    return(station_table)
     
-### table row click, delivers a station code for later 
-#### TODO! 
-
-### remove the hourly_readings_table output from here, and only 
-# output the station_code in the text_station_table_selection 
-# THEN use the callback below that updates the hourly table when the date is 
-# selected, to update when either date is selected or the 
+## table row click, stores the station code of the selected row in an
+# element on the html page, that is read by several other components.  
+# this is helpful so the 'selected_row' doesn't have to be sent 
+# and this component can be used as a state value
+# This callback is not affected by the page time, only table row click
 @app.callback(
-    [Output("text_station_table_selection", "children"),
-    Output("text_station_table_selection", "href"),
-    Output("station_type_cell", "children"),
-    # Output("hourly_readings_table", "children", allow_duplicate=True),
-    Output('tomcast-results', 'children',allow_duplicate=True)],
-    [Input("station_table", "selectedRows"),Input('interval-component', 'n_intervals')],
+    [
+        Output("text_station_table_selection", "children"),
+        Output("text_station_table_selection", "href"),
+        Output("station_type_cell", "children"),
+        Output('tomcast-results', 'children',allow_duplicate=True)
+    ],
+    [Input("station_table", "selectedRows")],
     prevent_initial_call=True,
 )
-def station_table_row_data(row, n)->tuple[str,str,str,str]:
+def station_table_row_data(row  )->tuple[str,str,str,str]:
     if row is None or row == []:
         return ("","", "", "") 
     
@@ -110,14 +101,12 @@ def station_table_row_data(row, n)->tuple[str,str,str,str]:
     if isinstance(row, dict) and 'station_code' in row:
         station_code = row['station_code']
         station_type = row['type']
-        #readings_table  = hourly_readings_table(station_code, for_date = str(date.today()))
             
     else:
         station_code = ""
         station_type = ""
-        # readings_table = html.Div("invalid station selection", className="fw-bold")    
         
-    return (station_code, station_code, station_type,  "") #readings_table, "") 
+    return (station_code, station_code, station_type,  "")
     #except Exception as e:
     #    return ("","", e)
 
@@ -131,6 +120,7 @@ def station_table_row_data(row, n)->tuple[str,str,str,str]:
         Output("latest-relh", "children"),
         Output("latest-wspd", "children"),
         Output("latest-wdir", "children"),
+        Output("counter-debug", "children"),         
     ],
     [
         Input("station_table", "selectedRows"),
@@ -142,8 +132,8 @@ def station_latest_weather(row, n):
     
     from datetime import datetime
     
-    if row is None or row == []:
-        return ("","--","--","--","--", "")
+    if not row:
+        return ("","--","--","--","--", "", n)
     
     if isinstance(row,list): row = row[0]
 
@@ -157,16 +147,17 @@ def station_latest_weather(row, n):
                     round(mm2inch(latest_reading['pcpn']),1), 
                     round(latest_reading['relh'],1),
                     round(kph2mph(latest_reading['wspd']),1),
-                    degree2compass(latest_reading['wdir'])  
+                    degree2compass(latest_reading['wdir']),
+                    n  
                     )        
-    return ("no recent readings","--","--","--","--", "")
+    return ("no recent readings","--","--","--","--", "",n)
 
 
 ### map marker click
 # the output is to select the table row, which then triggers the row click
 @app.callback(
         # Output("text_station_map_coordinates", "children"),
-        Output("station_table", "selectedRows"),
+        Output("station_table", "selectedRows", allow_duplicate = True),
         [Input(station_marker_id(station), 'n_clicks') for station in list(station_records().values())],
         prevent_initial_call=True,
         )
