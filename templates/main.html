@@ -1,4 +1,4 @@
-<div class="page">
+<div class="page">  
   <!-- Sidebar -->
   <!-- <aside class="navbar navbar-vertical navbar-expand-lg navbar-dark">
     <div class="container-fluid">
@@ -38,7 +38,6 @@
     </div>
   </aside>
    -->
-  
   <div class="page-wrapper">
   
       <!-- -----------Page header--------- -->
@@ -92,7 +91,7 @@
             <!-- ------table of stations------ -->
             <div class="col-lg-6">
                 <div class="card">
-                    <div class="card-body m-0 p-0" >
+                    <div class="card-body m-0 p-0" id="station-table-div" >
                     {{ station_table | plotly }}
                     </div>
                 </div>
@@ -342,15 +341,15 @@
 
                 </div>
             </div>
-            <div class="row" id = "station_data_section">  
-                <!-- station meta data-->
-                <div class="col-md-12 col-lg-12">
+            <div class="row" id = "station_data_section">                  
+            <!-- currently not used -->
+            <!--  <div class="col-md-12 col-lg-12">
                   <div class="card mb-3">
                       <div class="card-header">
                           <h3 class="card-title">Station Details</h3>
                         </div>
                       <div class="card-body">
-                          <!-- <h5 class="card-title"></h5> -->
+                          <h5 class="card-title"></h5>
                           <p class="card-text"></p>
                       </div>
                   </div>
@@ -368,24 +367,25 @@
                       <div class="col-auto d-flex align-items-center pe-2">
                         <span class="legend me-2 bg-success"></span>
                         <span>Success</span>
-                        <!-- <span class="d-none d-md-inline d-lg-none d-xxl-inline ms-2 text-muted">n/N</span> -->
+                        <span class="d-none d-md-inline d-lg-none d-xxl-inline ms-2 text-muted">-</span>
                       </div>
                       <div class="col-auto d-flex align-items-center px-2">
                         <span class="legend me-2 bg-warning"></span>
                         <span>Pause or Delayed</span>
-                        <!-- <span class="d-none d-md-inline d-lg-none d-xxl-inline ms-2 text-muted">n/N</span> -->
+                        <span class="d-none d-md-inline d-lg-none d-xxl-inline ms-2 text-muted">-</span>
                       </div>
                       <div class="col-auto d-flex align-items-center ps-2">
                         <span class="legend me-2 bg-danger"></span>
                         <span>Error</span>
-                        <!-- <span class="d-none d-md-inline d-lg-none d-xxl-inline ms-2 text-muted">n/N</span> -->
+                        <span class="d-none d-md-inline d-lg-none d-xxl-inline ms-2 text-muted"></span>
                       </div>
                     </div>
                   </div>
                   </div>
                 </div>            
             </div>
-          </div> <!-- data section, hidden until station is selected -->
+          </div> -->
+          <!-- data section, hidden until station is selected -->
         </div> <!-- container-->
       </div> <!-- page-body-->
       <footer class="footer footer-transparent d-print-none">
@@ -401,13 +401,13 @@
             <div class="col-12 col-lg-auto mt-3 mt-lg-0">
               <ul class="list-inline list-inline-dots mb-0">
                 <li class="list-inline-item">
-                  Copyright &copy; 2024              
+                  Copyright &copy; 2025              
                   <a href="https://enviroweather.msu.edu" class="link-secondary">MSU Enviroweather</a>.
                   <em>This site is currently for demonstration purposes only</em>
                 </li>
                 <li class="list-inline-item">
                   <a href="#" class="link-secondary" rel="noopener">
-                    v0.2
+                    version 0.3
                   </a>
                 </li>
               </ul>
@@ -417,5 +417,5 @@
       </footer>
 
   </div> <!-- page wrapper-->
-  
+    {{ interval_component| plotly }} 
 </div> <!-- page -->

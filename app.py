@@ -29,19 +29,20 @@ TEMPLATES_DIR = getenv('DASH_TEMPLATE_DIR', path.join(APP_PATH, "templates"))
 
 TemplateRenderer(dash=app)
 
-from flask_caching import Cache
-cache = Cache(app.server, config={
-    'CACHE_TYPE': 'filesystem',
-    'CACHE_DIR': getenv('DASH_CACHE', path.join(APP_PATH, 'cache-directory'))
-})
+# from flask_caching import Cache
+# cache = Cache(app.server, config={
+#     'CACHE_TYPE': 'filesystem',
+#     'CACHE_DIR': getenv('DASH_CACHE', path.join(APP_PATH, 'cache-directory'))
+# })
 
-TIMEOUT:int = 60
+TIMEOUT:int = 60 # seconds
 
-@cache.memoize(timeout=TIMEOUT)
+# @cache.memoize(timeout=TIMEOUT)
 def station_records()->list:
     return(get_all_stations())
 
-@cache.memoize(timeout=TIMEOUT)
+
+# @cache.memoize(timeout=TIMEOUT)
 def get_template(template_file, template_dir:str = TEMPLATES_DIR)->str:
   with open(path.join(template_dir, template_file)) as template_file:
     main_template:str = template_file.read()
@@ -52,6 +53,11 @@ body_with_class_for_template = '<body class="layout-fluid">'
 app.index_string = app.index_string.replace('<body>', body_with_class_for_template)
     
 app.layout =  render_dash_template_string(get_template(template_file = "main.html"),
+    interval_component = dcc.Interval(
+            id='interval-component',
+            interval= 5*60*1000, # 5 minutes in milliseconds
+            n_intervals=1
+        ),
     station_table = pwsc.station_table_narrow(station_records()),
     station_map = station_map(station_records()),
     hourly_weather_form = hourly_weather_form(),
@@ -69,9 +75,16 @@ app.layout =  render_dash_template_string(get_template(template_file = "main.htm
 
 #### REACTIVITY 
 
+@app.callback(
+    Output("station-table-div", "children"), 
+    Input('interval-component', 'n_intervals'),
+    prevent_initial_call=True,)
+def station_table_data(n):
+    station_records = get_all_stations()
+    station_table = pwsc.station_table_narrow(station_records)
+    return(station_table)
+    
 ### table row click, delivers a station code for later 
-
-
 #### TODO! 
 
 ### remove the hourly_readings_table output from here, and only 
@@ -84,24 +97,25 @@ app.layout =  render_dash_template_string(get_template(template_file = "main.htm
     Output("station_type_cell", "children"),
     # Output("hourly_readings_table", "children", allow_duplicate=True),
     Output('tomcast-results', 'children',allow_duplicate=True)],
-    Input("station_table", "selectedRows"),
+    [Input("station_table", "selectedRows"),Input('interval-component', 'n_intervals')],
     prevent_initial_call=True,
 )
-def station_table_row_data(row)->tuple[str,str,str,str]:
+def station_table_row_data(row, n)->tuple[str,str,str,str]:
     if row is None or row == []:
-        return ("","", "", "") # dbc.Alert("select a station above", color="warning"),"")
-    # we got a list but just want one
-    #try:
+        return ("","", "", "") 
+    
+    # we got a list but just want one, so pick
     if isinstance(row,list): row = row[0]
+    
     if isinstance(row, dict) and 'station_code' in row:
         station_code = row['station_code']
         station_type = row['type']
-        # readings_table  = hourly_readings_table(station_code)
+        #readings_table  = hourly_readings_table(station_code, for_date = str(date.today()))
             
     else:
         station_code = ""
         station_type = ""
-        readings_table = html.Div("invalid station selection", className="fw-bold")    
+        # readings_table = html.Div("invalid station selection", className="fw-bold")    
         
     return (station_code, station_code, station_type,  "") #readings_table, "") 
     #except Exception as e:
@@ -118,10 +132,13 @@ def station_table_row_data(row)->tuple[str,str,str,str]:
         Output("latest-wspd", "children"),
         Output("latest-wdir", "children"),
     ],
-    Input("station_table", "selectedRows"),
+    [
+        Input("station_table", "selectedRows"),
+        Input('interval-component', 'n_intervals')
+    ],
     prevent_initial_call=True,
 )
-def station_latest_weather(row):
+def station_latest_weather(row, n):
     
     from datetime import datetime
     
@@ -181,11 +198,12 @@ def redraw_weather_viz(station_code):
     Output("hourly_readings_table", "children", allow_duplicate=True),
     [
         Input("hourly-weather-date-picker", "date"),
-        Input("text_station_table_selection", "children")
+        Input("text_station_table_selection", "children"),
+        Input('interval-component', 'n_intervals')
     ],
     prevent_initial_call=True,
 )
-def redraw_hourly_weather_table(hourly_weather_date, station_code):
+def redraw_hourly_weather_table(hourly_weather_date, station_code, n):
     if not station_code:
         return(dbc.Alert("select a station above", color="warning"))
     
@@ -239,7 +257,7 @@ def clear_weather_summary_table(row):
 
 @app.callback(
     Output('weather-summary-table', 'children', allow_duplicate=True),
-    Input('run-weather-summary-button','n_clicks'),
+    [Input('run-weather-summary-button','n_clicks'),],
     State("text_station_table_selection", "children"),
     State("weather-summary-date-picker", "date"),
     prevent_initial_call=True,
