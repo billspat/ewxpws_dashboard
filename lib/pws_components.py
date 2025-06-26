@@ -142,6 +142,9 @@ def hourly_readings_dataframe(station_code, for_date = None):
             return("No Data")        
         
         weather_df = DataFrame(hourly_weather_json)
+        # filter out incomplete hours by ensuring record_count is all readings/hour
+        weather_df = weather_df[weather_df["record_count"] >= weather_df["api_hourly_frequency"]]
+
         if(weather_df is None or (type(weather_df) != type(DataFrame([{}]))) or weather_df.empty):
             return("No Data")        
         else:
@@ -526,8 +529,8 @@ def weather_summary_viz(station_code, select_date = None):
         return(dbc.Alert(weather_df)) 
 
     # for now, select few columns
-    data_column = 'atmp_avg'
-    data_column_label = 'Average Temperature (F)'
+    data_column = 'atmp_max'
+    data_column_label = 'max Temperature (F)'
     ws_columns = ['date', data_column ]
 
     weather_df_filtered = weather_df.loc[:,ws_columns]
