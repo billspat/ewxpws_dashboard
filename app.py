@@ -19,23 +19,16 @@ from lib.pwsapi import get_all_stations, get_station_data
 from lib.pws_map import station_map, station_marker_id, station_from_marker_id
 from lib.converters import degree2compass, kph2mph, c2f, mm2inch
 
-### CONFIG
-ag_hall_coordinates = [42.73104, -84.47951]
+#### CONFIG AND APP SETUP
 bs53css = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-
-app = Dash(__name__, prevent_initial_callbacks=True,  external_stylesheets= [bs53css])  #dbc.themes.BOOTSTRAP
-
 APP_PATH =  path.abspath(path.dirname(__file__))
-TEMPLATES_DIR = getenv('DASH_TEMPLATE_DIR', path.join(APP_PATH, "templates"))
-
-TemplateRenderer(dash=app)
+app = Dash(__name__, prevent_initial_callbacks=True,  external_stylesheets= [bs53css])  
 
 from flask_caching import Cache
 cache = Cache(app.server, config={
     'CACHE_TYPE': 'filesystem',
     'CACHE_DIR': getenv('DASH_CACHE', path.join(APP_PATH, 'cache-directory'))
 })
-
 TIMEOUT:int = 60 # seconds
 
 @cache.memoize(timeout=TIMEOUT)
@@ -43,16 +36,30 @@ def station_records()->list:
     return(get_all_stations())
 
 
-# @cache.memoize(timeout=TIMEOUT)
+
+#### PAGE LAYOUT
+# note using external library dash_template_rendering which uses a jinja file
+# as a template rather than putting all the HTML tag functions directly in 
+# app.py which is much easier to edit.  
+# see https://github.com/pschleiter/dash-template-rendering
+
+# have to hack the default html that dash creates to work with our template
+TEMPLATES_DIR = getenv('DASH_TEMPLATE_DIR', path.join(APP_PATH, "templates"))
+TemplateRenderer(dash=app)
+
+# custom function to read file into string for  render_dash_template_string
+# and to cache it
+@cache.memoize(timeout=TIMEOUT)
 def get_template(template_file, template_dir:str = TEMPLATES_DIR)->str:
   with open(path.join(template_dir, template_file)) as template_file:
     main_template:str = template_file.read()
   return(main_template)
-  
 
+# hack default template to work with our layout 
 body_with_class_for_template = '<body class="layout-fluid">'
 app.index_string = app.index_string.replace('<body>', body_with_class_for_template)
-    
+
+# render the jinja template using template file    
 app.layout =  render_dash_template_string(get_template(template_file = "main.html"),
     interval_component = dcc.Interval(
             id='interval-component',
@@ -74,7 +81,6 @@ app.layout =  render_dash_template_string(get_template(template_file = "main.htm
 
 
 #### REACTIVITY #####
-
     
 ## table row click, stores the station code of the selected row in an
 # element on the html page, that is read by several other components.  
@@ -111,7 +117,7 @@ def station_table_row_data(row  )->tuple[str,str,str,str]:
     #    return ("","", e)
 
 
-### latest weather stats
+### load latest weather stats from selected station
 @app.callback(
     [
         Output("latest_reading_date_cell", "children"),
@@ -153,10 +159,10 @@ def station_latest_weather(row, n):
     return ("no recent readings","--","--","--","--", "",n)
 
 
-### map marker click
-# the output is to select the table row, which then triggers the row click
+### map marker click, which selects a table row
+# which then triggers the row selection. 
+# see Dash AG Grig docs for how sending a function can select a row
 @app.callback(
-        # Output("text_station_map_coordinates", "children"),
         Output("station_table", "selectedRows", allow_duplicate = True),
         [Input(station_marker_id(station), 'n_clicks') for station in list(station_records().values())],
         prevent_initial_call=True,
@@ -166,12 +172,9 @@ def display_marker_click(*args):
         return({})
     else:
         station_code = station_from_marker_id(ctx.triggered_id)
-        # station_record = station_records[station_code]
         return({"function": f"params.data.station_code == '{station_code}'"})            
-        # return(station_code, {"function": f"params.data.station_code == '{station_code}'"})   
 
-
-##### weather viz figure graph
+##### weather line graph, currently only air temp
 @app.callback(
     Output("weather-summary-viz",'children'),
     Input("text_station_table_selection", "children"),
@@ -184,7 +187,7 @@ def redraw_weather_viz(station_code):
     return(dcc.Graph(figure=pwsc.weather_summary_viz(station_code),id='weather-graph'))
 
 
-##### Hourly Weather
+##### Hourly Weather table from the PWS API 
 @app.callback(
     Output("hourly_readings_table", "children", allow_duplicate=True),
     [
@@ -233,9 +236,7 @@ def display_form_on_select(row):
     
 
 ##### WEATHER SUMMARY model
-
-
-### clear the weather summary table when new station is selected
+# clear the weather summary table when new station is selected
 @app.callback(
     Output('weather-summary-table', 'children',allow_duplicate=True),
     Input("station_table", "selectedRows"),
@@ -245,7 +246,7 @@ def clear_weather_summary_table(row):
     # TODO - check if the row selected is actually different first!
     return("")
 
-
+# submit click 
 @app.callback(
     Output('weather-summary-table', 'children', allow_duplicate=True),
     [Input('run-weather-summary-button','n_clicks'),],
