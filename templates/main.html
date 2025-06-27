@@ -67,11 +67,12 @@
                     Enviroweather Main Site
                   </a>
                 </span> 
+                <!-- 
                 <a href="#" class="btn btn-primary d-none d-sm-inline-block" data-bs-toggle="modal" data-bs-target="#modal-report">                                        
                   Download Data
-                </a>
-                <a href="#" class="btn btn-primary d-sm-none btn-icon" data-bs-toggle="modal" data-bs-target="#modal-report" aria-label="Create new report">
-                                      
+                </a> 
+                 <a href="#" class="btn btn-primary d-sm-none btn-icon" data-bs-toggle="modal" data-bs-target="#modal-report" aria-label="Create new report">
+                -->
                 </a>
               </div>
             </div>
@@ -112,12 +113,16 @@
                 <div class="card-body">
                   <div class="d-flex align-items-center">
                     <div class="subheader">Selected Station</div>
+                                    
+
                   </div>
                   <div class="h1 mb-3">
                       <a id = "text_station_table_selection" href='#'></a>
                   </div>           
                   <div>
-                    <div id="station_type_cell" class="d-inline lh-1 mr-1 pr-1 text-muted" style="padding-right:1em;"></div>
+                    <div id="station_type_cell" class="d-inline lh-1 mr-1 pr-1 text-muted" style="padding-right:1em;">
+                      <i>Please select a station</i>
+                    </div>
                     <div id="latest_reading_date_cell" class="d-inline lh-1 ml-1 text-muted" style="padding-left:1em;" ></div> 
                   </div>
                 </div>
@@ -393,8 +398,10 @@
           <div class="row text-center align-items-center flex-row-reverse">
             <div class="col-lg-auto ms-lg-auto">
               <ul class="list-inline list-inline-dots mb-0">
-                <li class="list-inline-item"><a href="#" class="link-secondary">MABR</a></li>
-                <li class="list-inline-item"><a href="#" class="link-secondary">CANR</a></li>
+                <li class="list-inline-item"><a href="https://enviroweather.msu.edu" class="link-secondary">Enviroweather</a></li>
+                <li class="list-inline-item"><a href="https://www.canr.msu.edu/research/" class="link-secondary">MABR</a></li>
+                <li class="list-inline-item"><a href="https://www.canr.msu.edu/outreach/" class="link-secondary">MSUE</a></li>
+                
                 <li class="list-inline-item"><a href="#" class="link-secondary" rel="noopener">GEO</a></li>
               </ul>
             </div>
@@ -410,7 +417,7 @@
                     version 0.3
                   </a>
                 </li>
-                <li class="list-inline-item">
+                <li class="list-inline-item" style="size:6px">
                   {{ counter_debug | plotly }}
                 </li>
               </ul>
