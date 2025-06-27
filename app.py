@@ -126,6 +126,7 @@ def station_table_row_data(row  )->tuple[str,str,str,str]:
         Output("latest-relh", "children"),
         Output("latest-wspd", "children"),
         Output("latest-wdir", "children"),
+        Output("latest-lws", "children"),
         Output("counter-debug", "children"),         
     ],
     [
@@ -139,7 +140,7 @@ def station_latest_weather(row, n):
     from datetime import datetime
     
     if not row:
-        return ("","--","--","--","--", "", n)
+        return ("","--","--","--","--", "", "--", n)
     
     if isinstance(row,list): row = row[0]
 
@@ -150,18 +151,19 @@ def station_latest_weather(row, n):
             formatted_datetime = latest_reading_dateime.strftime("%I:%M %p %m-%d-%Y")
             
             atmp = round(c2f(latest_reading['atmp']),1) if latest_reading.get('atmp') else "--"
-            pcpn = round(mm2inch(latest_reading['pcpn']),1) if latest_reading['pcpn'] else "--"
-            relh = round(latest_reading['relh'],1) if latest_reading['relh'] else "--"
+            pcpn = round(mm2inch(latest_reading['pcpn']),1) if latest_reading.get('pcpn') else "0"
+            relh = round(latest_reading['relh'],1) if latest_reading.get('relh') else "--"
             wspd = round(kph2mph(latest_reading['wspd']),1) if latest_reading.get('wspd') else "--"
-            wdir = degree2compass(latest_reading['wdir'])if latest_reading['wdir'] else "--"
-            return (formatted_datetime ,
+            wdir = degree2compass(latest_reading['wdir'])if latest_reading.get('wdir') else "--"
+            lws = latest_reading['lws'] if latest_reading.get('lws') else "--"
+            return (formatted_datetime,
                     atmp,                             
                     pcpn,
                     relh,
                     wspd,
                     wdir,
-                    n  
-                    )        
+                    lws,
+                    n)        
     return ("no recent readings","--","--","--","--", "",n)
 
 
