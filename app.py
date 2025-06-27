@@ -148,12 +148,18 @@ def station_latest_weather(row, n):
         if isinstance(latest_reading, dict) and 'atmp' in latest_reading: 
             latest_reading_dateime = datetime.fromisoformat(latest_reading['local_datetime'])
             formatted_datetime = latest_reading_dateime.strftime("%I:%M %p %m-%d-%Y")
-            return (formatted_datetime , 
-                    round(c2f(latest_reading['atmp']),1), 
-                    round(mm2inch(latest_reading['pcpn']),1), 
-                    round(latest_reading['relh'],1),
-                    round(kph2mph(latest_reading['wspd']),1),
-                    degree2compass(latest_reading['wdir']),
+            
+            atmp = round(c2f(latest_reading['atmp']),1) if latest_reading.get('atmp') else "--"
+            pcpn = round(mm2inch(latest_reading['pcpn']),1) if latest_reading['pcpn'] else "--"
+            relh = round(latest_reading['relh'],1) if latest_reading['relh'] else "--"
+            wspd = round(kph2mph(latest_reading['wspd']),1) if latest_reading.get('wspd') else "--"
+            wdir = degree2compass(latest_reading['wdir'])if latest_reading['wdir'] else "--"
+            return (formatted_datetime ,
+                    atmp,                             
+                    pcpn,
+                    relh,
+                    wspd,
+                    wdir,
                     n  
                     )        
     return ("no recent readings","--","--","--","--", "",n)
