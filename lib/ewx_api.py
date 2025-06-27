@@ -182,7 +182,9 @@ def weather_summary(station_code:str, select_date:Union[datetime,date,None] = No
     model_url = f"{BASE_RM_API_URL}/db2/run?stationCode={station_code}&stationType={PWS_STATION_TYPE}&selectDate={select_date_str}&resultModelCode={result_model_code}"
     model_data = ewx_request(model_url, base_ewx_api_url)
     if model_data and 'Table' in model_data:
-        weather_df= DataFrame(model_data['Table'])        
+        weather_df= DataFrame(model_data['Table'])
+        weather_df.sort_values(by='date', axis=0, ascending=False, inplace=True)      
+        
     else:
         weather_df = DataFrame([{}])    
     return(weather_df)
