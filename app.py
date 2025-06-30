@@ -150,12 +150,12 @@ def station_latest_weather(row, n):
             latest_reading_dateime = datetime.fromisoformat(latest_reading['local_datetime'])
             formatted_datetime = latest_reading_dateime.strftime("%I:%M %p %m-%d-%Y")
             
-            atmp = round(c2f(latest_reading['atmp']),1) if latest_reading.get('atmp') else "--"
-            pcpn = round(mm2inch(latest_reading['pcpn']),1) if latest_reading.get('pcpn') else "0"
-            relh = round(latest_reading['relh'],1) if latest_reading.get('relh') else "--"
-            wspd = round(kph2mph(latest_reading['wspd']),1) if latest_reading.get('wspd') else "--"
+            atmp = round(c2f(latest_reading['atmp']),1) if latest_reading.get('atmp') or latest_reading.get('atmp') == 0 else "--"
+            pcpn = round(mm2inch(latest_reading['pcpn']),1) if latest_reading.get('pcpn') or latest_reading.get('pcpn') == 0 else "0"
+            relh = round(latest_reading['relh'],1) if latest_reading.get('relh') or latest_reading.get('relh') == 0 else "--"
+            wspd = round(kph2mph(latest_reading['wspd']),1) if latest_reading.get('wspd') or latest_reading.get('wspd') == 0 else "--"
             wdir = degree2compass(latest_reading['wdir'])if latest_reading.get('wdir') else "--"
-            lws = latest_reading['lws'] if latest_reading.get('lws') else "--"
+            lws = latest_reading['lws'] if latest_reading.get('lws') or latest_reading.get('lws') == 0 else "--"
             return (formatted_datetime,
                     atmp,                             
                     pcpn,
