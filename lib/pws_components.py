@@ -382,7 +382,11 @@ def tomcast_model(station_code:str,
                     },
         columnSize="sizeToFit",
         rowClassRules = tomcastRowClassRules,
-        )
+        dashGridOptions={
+            "sortingOrder": ['desc', 'asc', None],
+            "sortModel": [{"colId": "Date", "sort": "desc"}],
+        }
+    )
         
     return(tomcast_table)
 
@@ -627,7 +631,7 @@ def applescab_model(station_code:str,
     
     
     # run model and format output to data frame
-    model_output = applescab(station_code, select_date, gt_start = gt_start)
+    model_output = applescab(station_code, select_date, gt_start = gt_start).sort_values(by='startDateTime', axis=0, ascending=False)   
     
     if not isinstance(model_output, DataFrame):
         return(model_output)
@@ -644,18 +648,21 @@ def applescab_model(station_code:str,
         "bg-warning": "params.data.risk == 'Moderate'",
         "bg-danger fw-bold" : "params.data.risk == 'Heavy'",
         } 
-       
-    model_output_filtered= model_output.loc[:,display_columns]
+    
+    # show_columns = ['Start', 'End', 'Risk', 'Progress']
+    # show_columns = [c['headerName'] for c in column_defs]
+    # model_output= model_output.loc[:,show_columns]
     
     grid = dag.AgGrid(
         id="applescab_grid",
-        rowData=model_output_filtered.to_dict("records"),
+        rowData=model_output.to_dict("records"),
         columnDefs=column_defs,
         rowClassRules = applescab_row_class_rules,
         dashGridOptions={"filter": False,
                     "wrapHeaderText": True,
                     "autoHeaderHeight": True,
-                    "sortingOrder": ['desc', 'asc', None],
+                    "sortingOrder": ['asc', 'desc', None],
+                    "sortModel": [{"colId": "Start", "sort": "desc"}],
                     "initialWidth": 200,                    
                     },
         

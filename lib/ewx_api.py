@@ -162,7 +162,7 @@ def tomcast(station_code:str,
     model_data = ewx_request(model_url, base_ewx_api_url)
 
     if model_data and 'Table' in model_data:
-        tomcast_df = DataFrame(model_data['Table'])
+        tomcast_df = DataFrame(model_data['Table']).sort_values(by='Date', axis=0, ascending=False)
         return(tomcast_df)
     else:        
         return(DataFrame([{}]))
@@ -241,7 +241,7 @@ def applescab(station_code:str,
     model_data = ewx_request(model_url, base_ewx_api_url)    
     
     if model_data and 'Table' in model_data:
-        model_df= DataFrame(model_data['Table'])        
+        model_df= DataFrame(model_data['Table']) # .sort_values(by='startDateTime', axis=0, ascending=False)       
     else:
         model_df = DataFrame([{}])    
     return(model_df)
