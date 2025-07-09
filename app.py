@@ -195,6 +195,31 @@ def redraw_weather_viz(station_code):
     return(dcc.Graph(figure=pwsc.weather_summary_viz(station_code),id='weather-graph'))
 
 
+#### DATE PICKERS
+## update all the date pickers when a station is selected to the users data. 
+
+
+@app.callback(
+    Output("tomcast-date-picker", "date"),
+    # Output("tomcast-date-picker", "min_date_allowed"),
+    Output("tomcast-date-picker", "max_date_allowed"),
+    Output("tomcast-spray-date-picker", "date"),
+    Output("tomcast-spray-date-picker", "max_date_allowed"),
+    Output("applescab-date-picker", "date"),
+    Output("applescab-date-picker", "max_date_allowed"),
+    Output("hourly-weather-date-picker", "date"),
+    Output("weather-summary-date-picker", "date"),
+    Input("station_table", "selectedRows"),
+)
+def set_tomcast_date_picker(_):
+    # THIS IS THE UTC DATE ON THE SERVER, not local date
+    today = datetime.now().date()
+    seven_days_ago_str =  days_ago(d=7).strftime("%Y-%m-%d")
+    max_date_allowed = today
+    return today, max_date_allowed, seven_days_ago_str, max_date_allowed, today, max_date_allowed, today, today
+
+    
+
 ##### Hourly Weather table from the PWS API 
 @app.callback(
     Output("hourly_readings_table", "children", allow_duplicate=True),
@@ -277,8 +302,6 @@ def weather_summary(n_clicks, station_code, select_date):
 
 ##### TOMCAST ####################
 
-
-## TOMCAST MODEL RUN
 @app.callback(
     Output('tomcast-results', 'children'),  
     Input('run-tomcast-button','n_clicks'),

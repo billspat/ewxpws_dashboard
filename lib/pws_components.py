@@ -241,20 +241,40 @@ def hourly_readings_grid_view(weather_df):
     return(grid)
 
 
-def pws_date_picker(id:str = "", initial_date_str:str = None):
+def pws_date_picker(id:str, initial_date_str:str = None):
+    """create a standard date picker for forms on PWS page. Note
+    the intial date and max dates are set by callbacks in app.py
+
+    Args:
+        id (str): the HTML element ID. 
+        initial_date_str (str, optional): date of the datepicker WHEN the app loads, not when the user
+        loads the page.  If left blank no initial date is set. Defaults to None.
+    Returns:
+        dcc.DatePickerSingle: a date picker component
+    """
     
-    if initial_date_str is None or not(initial_date_str):
-        initial_date_str = today_localtime_str()
+    # TODO find a way to set the initial date after initialization
     
     dps = dcc.DatePickerSingle(id=id,
-                display_format='YYYY-MM-DD',
-                first_day_of_week = 1,                                       
-                placeholder="Select Date",
-                date = initial_date_str, 
-                className="fs-6 fw-semibold me-3",
-                min_date_allowed=first_of_last_year_string(),
-                max_date_allowed=today_localtime_str(),
-                )
+        display_format='YYYY-MM-DD',
+        first_day_of_week = 1,                                       
+        placeholder="Select Date",
+        className="fs-6 fw-semibold me-3",                
+        min_date_allowed=first_of_last_year_string(),
+        )
+    # TODO set minimum date to in app.py callback when station is selected to earliest data 
+    if initial_date_str is None or not(initial_date_str):
+        dps.date = initial_date_str
+    
+    # else:
+    #     dps = dcc.DatePickerSingle(id=id,
+    #             display_format='YYYY-MM-DD',
+    #             first_day_of_week = 1,                                       
+    #             placeholder="Select Date",
+    #             date = initial_date_str, 
+    #             className="fs-6 fw-semibold me-3",            
+    #             min_date_allowed=first_of_last_year_string(),            
+    #             )        
     
     return(dps)
 
@@ -289,7 +309,7 @@ def tomcast_form():
             dbc.Col([
                 html.Div("Date of last spray/date to start accumulating DSV:", 
                         className="col-auto me-3 d-none d-sm-inline-block"),
-                pws_date_picker(id='tomcast-spray-date-picker', initial_date_str= seven_days_ago_str )
+                pws_date_picker(id='tomcast-spray-date-picker' )
                 ],
                 className="me-3",
                 width = "auto"             
@@ -579,7 +599,7 @@ def applescab_form():
             dbc.Col([
                 html.Div("Date of green tip:", 
                         className="col-auto me-3 d-none d-sm-inline-block"),
-                pws_date_picker(id='applescab-greentip-date-picker', initial_date_str="")
+                pws_date_picker(id='applescab-greentip-date-picker')
                 ],
                 className="me-3",
                 width = "auto"             
