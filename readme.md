@@ -1,12 +1,26 @@
 ## Enviroweather Personal Weather Station dashboard
 
-A web dashboard for demonstrating the data and outputs from crop models using the personal weather station (PWS) system.  
+A web dashboard for demonstrating the data and outputs from crop models using the personal weather station (PWS) system.  The PWS 
 
-This is a work in progress in heavy development.  
+It displays data from the data API from the Eniviroweather PWS API/database ( https://github.com/billspat/ewxpwsdb/ ), as well as the model API (aka RM-API) from Enviroweather which pulls data from the PWS API, runs Enviroweather crop models, and returns PWS-tailored results, which are displayed on this dashboard. 
 
-It displays data from the data API from the Eniviroweather PWS database as well as the model API (aka RM-API) from Enviroweather. 
+This is a proof of concept and crop models are limited to TOMCAST and Apple Scab. Those can be run for the Enviroweather Network stations for specific crops, 
+for example [MSU Enviroweather TOMCAST model](https://enviroweather.msu.edu/crops/otherVeg/tomcast) and [MSU Enviroweather Apple Scab model](https://enviroweather.msu.edu/crops/apple/applescab)
 
-### Developers
+### For Users
+
+We welcome additional personal weather stations for this project.  Please contact eweather@msu.edu if you'd like to participate.  
+
+We've started with test stations located at the MSU Enviroweather field office on the MSU campus.  
+
+1. Select a station from the map or list
+2. if the station is active it will show current data
+3. select a model to run from the tabs.  
+4. modify parameters for the model to run with and click the button labeled something like 'run model'
+5. model results are presented as a table or graph below for the parameters submitted
+6. Daily weather summary is from January 1 per Enviroweather summary model.  Some stations are deployed mid-season and do not have data for the full year. 
+
+### For Developers/Contributors
 
 This is written using the Plotly Dash  
 
